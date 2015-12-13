@@ -57,8 +57,9 @@ void lcd_init(void)
  */
 void lcd_start(void)
 {
-#if DEBUG_BOOK
 	LCD_ALERT_SEND_COMMAND();
+
+#if DEBUG_BOOK
 
 	delay_ms(40);
 	lcd_send(0x30);			//0011 0000
@@ -120,6 +121,9 @@ void lcd_start(void)
 
 	delay_ms(1);
 	lcd_send(0x06);//have display shift left when adding chars - see p.26
+
+	delay_ms(1);
+	lcd_send(0x0C);//Display on, no blink
 #endif
 }
 

@@ -21,7 +21,6 @@ void clock_config(void)
 	CSCTL2 = SELA_1 + SELS_3 + SELM_3;        // set ACLK = vlo; MCLK = DCO
 	CSCTL3 = DIVA_0 + DIVS_0 + DIVM_3;        // set all dividers
 	CSCTL0_H = 0x01;                          // Lock Register
-
 }
 
 void write_to_lcd(void)
