@@ -4,10 +4,6 @@
  *  Created on: Nov 29, 2015
  *      Author: Max
  */
-
-
-
-
 void delay_ms(unsigned int ms)
 {
 	while (ms != 0)

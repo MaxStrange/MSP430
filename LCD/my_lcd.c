@@ -7,10 +7,6 @@
 #include "my_lcd.h"
 
 
-#define DEBUG_BOOK 0
-#define DEBUG_MINE 1
-
-
 void lcd_send(unsigned char data)
 {
 	LCD_DATA = ((data & 0xF0) >> 4);//send the upper four bits of the char
@@ -34,6 +30,10 @@ void lcd_write_char(char ch)
 	lcd_send(ch);
 }
 
+/*
+ * Moves the cursor to the location specified.
+ * Zero-based indexing is used.
+ */
 void lcd_goto(char x, char y)
 {
 	LCD_ALERT_SEND_COMMAND();
