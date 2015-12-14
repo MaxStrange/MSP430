@@ -2,15 +2,16 @@
 #include "my_lcd.h"
 #include "my_system.h"
 
-char lcd[5];
-
-void pin_config(void);
-void clock_config(void);
-void write_to_lcd(void);
+/*Function declarations*/
+static void clock_config(void);
+static void write_to_lcd(void);
 
 
-void clock_config(void)
+static void clock_config(void)
 {
+	/*
+	 * Turn off the watchdog timer
+	 */
 	WDTCTL = WDTPW | WDTHOLD;
 
 	/*
@@ -23,10 +24,10 @@ void clock_config(void)
 	CSCTL0_H = 0x01;                          // Lock Register
 }
 
-void write_to_lcd(void)
+static void write_to_lcd(void)
 {
 	static char * lcd_str = "hello";
-	lcd_goto(1, 1);
+	lcd_goto(0, 0);
 	lcd_write_str(lcd_str);
 }
 
@@ -35,7 +36,7 @@ void write_to_lcd(void)
  */
 int main(void)
 {
-	lcd_init();
+	lcd_pin_init();
 	clock_config();
 	lcd_start();
 

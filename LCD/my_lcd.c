@@ -37,16 +37,16 @@ void lcd_write_char(char ch)
 void lcd_goto(char x, char y)
 {
 	LCD_ALERT_SEND_COMMAND();
-	if (x == 1)
-		lcd_send(0x80 + (y - 1));//???????
+	if (x == 0)
+		lcd_send(0x80 + y);
 	else
-		lcd_send(0xC0 + (y - 1));//???????
+		lcd_send(0xC0 + y);
 }
 
 /*
  * Initializes pin configuration for lcd module.
  */
-void lcd_init(void)
+void lcd_pin_init(void)
 {
 	P1DIR |= (LCDPIN_RS | LCDPIN_E);
 	P3DIR |= (LCDPIN_D4 | LCDPIN_D5 | LCDPIN_D6 | LCDPIN_D7);
@@ -59,27 +59,6 @@ void lcd_start(void)
 {
 	LCD_ALERT_SEND_COMMAND();
 
-#if DEBUG_BOOK
-
-	delay_ms(40);
-	lcd_send(0x30);			//0011 0000
-
-	delay_ms(1);
-	lcd_send(0x28);			//0010 1000
-
-	delay_ms(1);
-	lcd_send(0x28);			//0010 1000
-
-	delay_ms(1);
-	lcd_send(0x0C);			//0000 1100
-
-	delay_ms(1);
-	lcd_send(0x01);			//0000 0001
-
-	delay_ms(2);
-	lcd_send(0x06);			//0000 0110
-#endif
-#if DEBUG_MINE
 	//delay at least 40ms after power rises above 2.7v before
 	//we send any commands
 	delay_ms(50);
@@ -124,7 +103,6 @@ void lcd_start(void)
 
 	delay_ms(1);
 	lcd_send(0x0C);//Display on, no blink
-#endif
 }
 
 /*
