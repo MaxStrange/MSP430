@@ -75,11 +75,12 @@ void init_clock(void)
 
 void init_pins(void)
 {
-    //	  PJSEL0 |= BIT4 + BIT5; //LEDs?
+	//Have to set up the pins that will take in the onboard XT1 - see p.91 of datasheet (not UG)
+	PJSEL0 |= BIT4 + BIT5;
 
-    //	  // Configure UART pins
-    //	  P2SEL1 |= BIT0 + BIT1;
-    //	  P2SEL0 &= ~(BIT0 + BIT1);
+	//Have to set the UART pins (UCA0 - see p.76 of datasheet)
+	P2SEL1 |= BIT0 + BIT1;
+	P2SEL0 &= ~(BIT0 + BIT1);
 }
 
 void init_UART(void)
@@ -126,12 +127,14 @@ void init_UART(void)
     UCA0CTL1 |= UCSWRST;
 
 	// Configure UART 0
-//	  UCA0CTL1 = UCSSEL_1;                      // Set ACLK = 32768 as UCBRCLK
-//	  UCA0BR0 = 3;
-//	  UCA0BR1 = 0;
-//	  UCA0MCTLW |= 0x5300;
+	UCA0CTL1 |= UCSSEL_2;	//set the baud rate clock source to be SMCLK
+	UCA0BR0 = 3;			//clock prescaler
+	UCA0MCTLW |= 0x9200;	//set the whole register in one instruction
 
     UCA0CTL1 &= ~UCSWRST;
+
+    //Now enable interrupts
+    //	TODO
 }
 
 #pragma vector=USCIAB0TX_VECTOR
