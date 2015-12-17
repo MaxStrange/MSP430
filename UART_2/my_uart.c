@@ -40,7 +40,7 @@ void uart_init(void)
     UCA0CTL1 |= UCSWRST;
 
 	// Configure UART 0
-	UCA0CTL1 |= UCSSEL_2;	//set the baud rate clock source to be SMCLK
+	UCA0CTL1 |= UCSSEL_1;	//set the baud rate clock source to be ACLK
 	UCA0BR0 = 3;			//clock prescaler
 	UCA0MCTLW |= 0x9200;	//set the whole register in one instruction
 

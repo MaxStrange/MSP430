@@ -8,6 +8,7 @@
 #ifndef MY_CLOCK_H_
 #define MY_CLOCK_H_
 
+#define MCLK_KHZ 1000
 
 
 void clock_init(void);
