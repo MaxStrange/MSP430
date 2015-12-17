@@ -13,12 +13,8 @@ void main(void) {
 
     while (1)
     {
-    	led_toggle_all();
+    	//led_toggle_all();
     	uart_write("hello!");
-    	system_delay(1000);
-
-//    	volatile unsigned int i = 50000;
-//    	for (; i > 0; i--)
-//    		;
+    	//system_delay(100);
     }
 }

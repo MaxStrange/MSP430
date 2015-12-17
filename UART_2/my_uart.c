@@ -37,14 +37,24 @@ void uart_init(void)
      * 4. Clear UCSWRST bit
      * 5. Enable interrupts via UCRXIE or UCTXIE
      */
-    UCA0CTL1 |= UCSWRST;
+	//This code is for using the ACLK (with the external crystal that doesn't seem to be working).
+	UCA0CTL1 |= UCSWRST;
 
 	// Configure UART 0
 	UCA0CTL1 |= UCSSEL_1;	//set the baud rate clock source to be ACLK
 	UCA0BR0 = 3;			//clock prescaler
 	UCA0MCTLW |= 0x9200;	//set the whole register in one instruction
 
-    UCA0CTL1 &= ~UCSWRST;
+	UCA0CTL1 &= ~UCSWRST;
+
+//	UCA0CTL1 |= UCSWRST;
+//
+//	UCA0CTL1 |= UCSSEL_2;	//set the baud rate clock source to be SMCLK
+//	UCA0BR0 = 6;			//clock prescaler
+//	UCA0BR1 = 0;
+//	UCA0MCTLW |= 0x2000;
+//
+//	UCA0CTL1 &= ~UCSWRST;
 
     //Now enable interrupts if you want to
     //	TODO
@@ -52,18 +62,20 @@ void uart_init(void)
 
 void uart_write(char *str)
 {
-	while (*str != '\0')
-	{
-		while (!UCTXIFG)
-			;
-
-		UCA0TXBUF = *str++;
-	}
+//	while (*str != '\0')
+//	{
+//		while (!UCTXIFG)
+//			;
+//
+//		UCA0TXBUF = *str++;
+//	}
+	UCA0TXBUF = 0x55;
 }
 
 static void init_pins(void)
 {
 	//UCA0 - see p.76 of device-specific datasheet
+	P2DIR |= BIT0;
 	P2SEL1 |= BIT0 + BIT1;
 	P2SEL0 &= ~(BIT0 + BIT1);
 }

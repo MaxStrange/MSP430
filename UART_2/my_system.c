@@ -5,7 +5,7 @@
 void system_delay(unsigned long int milliseconds)
 {
 	//Empirically derived
-	static const double MS_PER_CYCLE = 36.5 / MCLK_KHZ;
+	static const double MS_PER_CYCLE = 18.25 / MCLK_KHZ;
 
 	volatile unsigned long len = (unsigned long)(((double)milliseconds / MS_PER_CYCLE) + 0.5);
 	while (len > 0)
