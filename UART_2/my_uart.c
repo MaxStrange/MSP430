@@ -52,7 +52,13 @@ void uart_init(void)
 
 void uart_write(char *str)
 {
+	while (*str != '\0')
+	{
+		while (!UCTXIFG)
+			;
 
+		UCA0TXBUF = *str++;
+	}
 }
 
 static void init_pins(void)

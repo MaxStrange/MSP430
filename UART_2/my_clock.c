@@ -30,7 +30,7 @@ void clock_init(void)
 	{
 		CSCTL5 &= ~XT1OFFG;						//This bit says whether or not there is a fault in the XT1 - so clear it
 		SFRIFG1 &= ~OFIFG;						//This bit says whether there is a fault interrupt - so clear it
-	}while (SFRIFG1&OFIFG);                     // Test to make sure there is no fault
+	}while (SFRIFG1 & OFIFG);                     // Test to make sure there is no fault
 
 	CSCTL0_H = 0x01;						    //Lock the CSC module now that it is configured
 

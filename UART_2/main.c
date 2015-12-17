@@ -8,8 +8,14 @@ void main(void) {
     clock_init();
     uart_init();
 
+    //_enable_interrupts();
+
     while (1)
     {
     	uart_write("hello!");
+
+    	volatile unsigned int i = 50000;
+    	for (; i > 0; i--)
+    		;
     }
 }
