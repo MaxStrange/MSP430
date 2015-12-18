@@ -28,6 +28,8 @@ void clock_init(void)
      *
      * But for some reason, this doesn't seem to work, and instead it just loops
      * forever.
+     *
+     * TODO : Fix the clock
      */
 //	do
 //	{

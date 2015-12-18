@@ -15,6 +15,11 @@ void uart_init(void)
 	/*
 	 * The following code block sets the clock source as the ACLK which should be running
 	 * at 32.678 kHz.
+	 *
+	 * UCOS16 = 0; UCA0BR0 = 3; UCA0BRF0 = unchanged; UCA0BRS0 = 0x92
+	 *
+	 * TODO : THIS DOESN'T WORK. PERHAPS THE CRYSTAL IS NOT WORKING PROPERLY OR YOU
+	 * ARE MISUNDERSTANDING HOW TO SOURCE FROM THE CRYSTAL.
 	 */
 
 
@@ -27,17 +32,16 @@ void uart_init(void)
 	 * The following code block sets the clock source as the SMCLK which should be running
 	 * at 1 MHz
 	 *
-	 * UCOS16 = 1; UCA0BR0 = 6; UCA0BRF0 = 8; UCA0BRS0 = 0x20;
+	 * UCOS16 = 1; UCA0BR0 = 6; UCA0BRF0 = 8; UCA0BRS0 = 0x20; <-- should probably be 0x11
 	 */
 
 	UCA0CTL1 |= UCSSEL_2;	//set the baud rate clock source to be SMCLK
 	UCA0BR0 = 6;			//clock prescaler
 	UCA0BR1 = 0;
 	UCA0MCTLW |= UCOS16;
-	UCA0MCTLW |= 0x2080;
+	UCA0MCTLW |= 0x1180;
 
 	UCA0CTL1 &= ~UCSWRST;
-
 
 
     //Now enable interrupts if you want to
@@ -46,17 +50,17 @@ void uart_init(void)
 
 void uart_write(char *str)
 {
-//	while (*str != '\0')
-//	{
-//		while (!UCTXIFG)
-//			;
-//
-//		UCA0TXBUF = *str++;
-//	}
-	while (!UCTXIFG)
-		;
+	while (*str != '\0')
+	{
+		while (!(UCA0IFG & UCTXIFG))
+			;
 
-	UCA0TXBUF = 0x55;	//0101 0101
+		UCA0TXBUF = *str++;
+	}
+//	while  (!(UCA0IFG & UCTXIFG))
+//		;
+//
+//	UCA0TXBUF = 0x55;	//0101 0101
 }
 
 static void init_pins(void)

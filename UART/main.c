@@ -3,7 +3,6 @@
 #include "my_uart.h"
 #include "main.h"
 
-
 static int my_delay(void)
 {
 	volatile unsigned long int i;
@@ -23,19 +22,19 @@ static void setup(void)
 
 static void loop(void)
 {
-//	unsigned char tx_buffer[6] = "hello"; -- look up strcpy for assigning strings to char arrays
-	unsigned char i = 0;
-
-
 	while (1)
 	{
 		led_blink();
 		my_delay();
-//		uart_write(tx_buffer[i]);
 		uart_write('h');
-
-		i++;
-		if (i >= 6) i = 0;
+//		my_delay();
+		uart_write('e');
+	//	my_delay();
+		uart_write('l');
+		//my_delay();
+		uart_write('l');
+		//my_delay();
+		uart_write('o');
 	}
 }
 

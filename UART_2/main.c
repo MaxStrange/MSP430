@@ -13,8 +13,8 @@ void main(void) {
 
     while (1)
     {
-    	//led_toggle_all();
+    	led_toggle_all();
     	uart_write("hello!");
-    	//system_delay(100);
+    	system_delay(100);
     }
 }
