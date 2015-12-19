@@ -57,10 +57,6 @@ void uart_write(char *str)
 
 		UCA0TXBUF = *str++;
 	}
-//	while  (!(UCA0IFG & UCTXIFG))
-//		;
-//
-//	UCA0TXBUF = 0x55;	//0101 0101
 }
 
 static void init_pins(void)
