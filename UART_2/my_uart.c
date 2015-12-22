@@ -1,9 +1,15 @@
 #include <msp430.h>
 #include "my_uart.h"
 
+static volatile char tx_buffer[NUM_ELEMENTS_IN_TX_BUFFER];
+static volatile unsigned int tx_read_index = 0;
+static volatile unsigned int tx_write_index = 0;
+static volatile int read_and_write_on_same_lap = 1;//boolean
+
 void uart_init(void)
 {
 	init_pins();
+
     /*
      * Setting a baud rate found on p.488 of user guide.
      * Initializing the UART is on p.479 of user guide.
@@ -42,21 +48,38 @@ void uart_init(void)
 	UCA0MCTLW |= 0x1180;
 
 	UCA0CTL1 &= ~UCSWRST;
-
-
-    //Now enable interrupts if you want to
-    //	TODO
 }
 
+/*
+ * Writes the given NULL-TERMINATED string to
+ * the UART. Blocks until full message is sent.
+ */
 void uart_write(char *str)
 {
+//	while (*str != '\0')
+//	{
+//		while (!(UCA0IFG & UCTXIFG))
+//			;
+//
+//		UCA0TXBUF = *str++;
+//	}
 	while (*str != '\0')
 	{
-		while (!(UCA0IFG & UCTXIFG))
-			;
-
-		UCA0TXBUF = *str++;
+		while (tx_write_index < NUM_ELEMENTS_IN_TX_BUFFER)
+		{
+			tx_buffer[tx_write_index] = *str++;
+			tx_write_index++;
+		}
+		if (tx_write_index >= NUM_ELEMENTS_IN_TX_BUFFER)
+		{
+			tx_write_index = 0;
+			read_and_write_on_same_lap = 0;//false
+		}
 	}
+
+	//enable the interrupt to send the data
+	UCA0IFG |= UCTXIFG;
+	UCA0IE |= UCTXIE;
 }
 
 static void init_pins(void)
@@ -65,4 +88,54 @@ static void init_pins(void)
 	P2DIR |= BIT0;
 	P2SEL1 |= BIT0 + BIT1;
 	P2SEL0 &= ~(BIT0 + BIT1);
+}
+
+/*
+ * Reads the next byte out of the txbuf and loads it into
+ * UCA0TXBUF register.
+ */
+static void send_next_byte(void)
+{
+	if ((tx_read_index >= tx_write_index) && (read_and_write_on_same_lap))
+	{
+		//queue is empty, disable TX interrupt until it gets some more data to send
+		UCA0IE &= ~UCTXIE;
+		UCA0IFG &= ~UCTXIFG;
+		return;
+	}
+
+	UCA0TXBUF = tx_buffer[tx_read_index];
+	tx_read_index++;
+
+	if (tx_read_index >= NUM_ELEMENTS_IN_TX_BUFFER)
+	{
+		tx_read_index = 0;
+		read_and_write_on_same_lap = 1;//true
+	}
+}
+
+#pragma vector=USCI_A0_VECTOR
+__interrupt void USCI_A0_ISR(void)
+{
+	switch (__even_in_range(UCA0IV, 18))
+	{
+	case 0x00://Vector 0: No interrupt... not sure what that means
+		break;
+
+	case 0x02://UCRXIFG -- received some data in the rx buf
+		break;
+
+	case 0x04://UCTXIFG -- sent some data from the tx buf
+		send_next_byte();
+		break;
+
+	case 0x06://UCSTTIFG -- start byte received
+		break;
+
+	case 0x08://UCTXCPTIFG -- sent all the data from the tx buf including a stop bit
+		break;
+
+	default:
+		break;
+	}
 }
