@@ -1,14 +1,13 @@
 #include <msp430.h>
 #include "my_uart.h"
+#include "circular_queue.h"
 
-static volatile char tx_buffer[NUM_ELEMENTS_IN_TX_BUFFER];
-static volatile unsigned int tx_read_index = 0;
-static volatile unsigned int tx_write_index = 0;
-static volatile int read_and_write_on_same_lap = 1;//boolean
+static volatile circular_queue tx_buffer;
 
 void uart_init(void)
 {
 	init_pins();
+	init_state();
 
     /*
      * Setting a baud rate found on p.488 of user guide.
@@ -59,18 +58,7 @@ void uart_write(char *str)
 {
 	while (*str != '\0')
 	{
-		while (tx_write_index < NUM_ELEMENTS_IN_TX_BUFFER)
-		{
-			tx_buffer[tx_write_index] = *str++;
-			tx_write_index++;
-			if (*str == '\0')
-				break;
-		}
-		if (tx_write_index >= NUM_ELEMENTS_IN_TX_BUFFER)
-		{
-			tx_write_index = 0;
-			read_and_write_on_same_lap = 0;//false
-		}
+		circular_queue_write_char(&tx_buffer, *str++);
 	}
 
 	//enable the interrupt to send the data
@@ -87,27 +75,28 @@ static void init_pins(void)
 }
 
 /*
+ * Initializes this module's internal state.
+ */
+static void init_state(void)
+{
+	circular_queue_construct(&tx_buffer);
+}
+
+/*
  * Reads the next byte out of the txbuf and loads it into
  * UCA0TXBUF register.
  */
 static void send_next_byte(void)
 {
-	if ((tx_read_index >= tx_write_index) && (read_and_write_on_same_lap))
+	if (circular_queue_is_empty(&tx_buffer))
 	{
-		//queue is empty, disable TX interrupt until it gets some more data to send
+		//Disable TX interrupt until it gets some more data to send
 		UCA0IE &= ~UCTXIE;
 		UCA0IFG &= ~UCTXIFG;
 		return;
 	}
 
-	UCA0TXBUF = tx_buffer[tx_read_index];
-	tx_read_index++;
-
-	if (tx_read_index >= NUM_ELEMENTS_IN_TX_BUFFER)
-	{
-		tx_read_index = 0;
-		read_and_write_on_same_lap = 1;//true
-	}
+	UCA0TXBUF = circular_queue_read_next_char(&tx_buffer);
 }
 
 #pragma vector=USCI_A0_VECTOR

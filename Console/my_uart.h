@@ -8,14 +8,13 @@
 #ifndef MY_UART_H_
 #define MY_UART_H_
 
-#define NUM_ELEMENTS_IN_TX_BUFFER 100
-
 void uart_init(void);
 void uart_write(char *str);
 
 
 
 static void init_pins(void);
+static void init_state(void);
 static void send_next_byte(void);
 
 
