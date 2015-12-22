@@ -69,6 +69,8 @@ void uart_write(char *str)
 		{
 			tx_buffer[tx_write_index] = *str++;
 			tx_write_index++;
+			if (*str == '\0')
+				break;
 		}
 		if (tx_write_index >= NUM_ELEMENTS_IN_TX_BUFFER)
 		{
