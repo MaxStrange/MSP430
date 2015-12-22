@@ -52,17 +52,11 @@ void uart_init(void)
 
 /*
  * Writes the given NULL-TERMINATED string to
- * the UART. Blocks until full message is sent.
+ * the UART. Does not block. Requires global interrupts
+ * to be on.
  */
 void uart_write(char *str)
 {
-//	while (*str != '\0')
-//	{
-//		while (!(UCA0IFG & UCTXIFG))
-//			;
-//
-//		UCA0TXBUF = *str++;
-//	}
 	while (*str != '\0')
 	{
 		while (tx_write_index < NUM_ELEMENTS_IN_TX_BUFFER)
