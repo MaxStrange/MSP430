@@ -3,6 +3,7 @@
 #include "circular_queue.h"
 
 static volatile circular_queue tx_buffer;
+static volatile circular_queue rx_buffer;
 
 void uart_init(void)
 {
@@ -47,6 +48,8 @@ void uart_init(void)
 	UCA0MCTLW |= 0x1180;
 
 	UCA0CTL1 &= ~UCSWRST;
+
+	UCA0IE |= UCRXIE;
 }
 
 /*
@@ -80,13 +83,22 @@ static void init_pins(void)
 static void init_state(void)
 {
 	circular_queue_construct(&tx_buffer);
+	circular_queue_construct(&rx_buffer);
+}
+
+static inline void load_received_byte_into_tx(void)
+{
+	unsigned char c = UCA0RXBUF;//reading from the buffer resets the interrupt flag
+	circular_queue_write_char(&tx_buffer, c);
+	UCA0IFG |= UCTXIFG;
+	UCA0IE |= UCTXIE;
 }
 
 /*
  * Reads the next byte out of the txbuf and loads it into
  * UCA0TXBUF register.
  */
-static void send_next_byte(void)
+static inline void send_next_byte(void)
 {
 	if (circular_queue_is_empty(&tx_buffer))
 	{
@@ -108,6 +120,7 @@ __interrupt void USCI_A0_ISR(void)
 		break;
 
 	case 0x02://UCRXIFG -- received some data in the rx buf
+		load_received_byte_into_tx();
 		break;
 
 	case 0x04://UCTXIFG -- sent some data from the tx buf

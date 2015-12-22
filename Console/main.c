@@ -14,9 +14,10 @@ void main(void) {
 
     while (1)
     {
-    	led_toggle_all();
-    	uart_write("hello!");
-    	system_delay(100);
+    	;
+//    	led_toggle_all();
+//    	uart_write("hello!");
+//    	system_delay(100);
     }
 
     //-Interrupts do not have to turn on other interrupts when done with their code - the processor does it for you
