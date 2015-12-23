@@ -8,6 +8,14 @@ static volatile circular_queue rx_buffer;
 static volatile int rx_data_is_complete = 0;//bool
 static volatile unsigned int num_chars_from_user = 0;
 
+
+/*
+ * API functions
+ *
+ *
+ */
+
+
 /*
  * Outputs an interface to the console. Then blocks until the user
  * inputs a response. Then places the response in the buffer with a nul
@@ -15,42 +23,24 @@ static volatile unsigned int num_chars_from_user = 0;
  */
 void uart_get_console_input(char *buffer, unsigned int buffer_length)
 {
+	/*
+	 * Get stuff from the user
+	 */
 	do
 	{
-		/*
-		 * Reinitialize the rx queue - it may be full of characters that the user has dumped in with a command that was too long
-		 */
-		unsigned int i = 0;
-		volatile char throw_away = 0;
-		for (i = 0; i < num_chars_from_user; i++)
-			throw_away = circular_queue_read_next_char(&rx_buffer);
-		num_chars_from_user = 0;
-
+		reinitialize_rx_queue();
 		uart_write("Please enter a command: ");
-
-		int rx_interrupt_already_enabled = (UCA0IE & UCRXIE);		//save the whether the rx interrupt is enabled or not (bool)
-
-		UCA0IE |= UCRXIE;											//enable the rx interrupt
-		while (!rx_data_is_complete)
-			;														//hang on until you get a complete statement from the user
-		if (!rx_interrupt_already_enabled)
-			UCA0IE &= ~UCRXIE;										//put the rx interrupt back into its previous state
-
-		rx_data_is_complete = 0;
+		get_user_input();
 
 	} while (num_chars_from_user >= buffer_length);//need one less character from user than buffer length so we can null terminate
 	num_chars_from_user = 0;
 
-	unsigned int i = 0;
-	for (i = 0; i < buffer_length; i++)
-	{
-		buffer[i] = circular_queue_read_next_char(&rx_buffer);
-		if (buffer[i] == '\n')
-			break;
-	}
-	buffer[i] = '\0';//replace the last char with the nul
-//	unsigned int last = (i + 1) >= buffer_length ? buffer_length - 1 : i + 1;
-//	buffer[last] = '\0';
+
+	/*
+	 * Put the stuff you got from the user into the string that was passed in
+	 * to the function.
+	 */
+	read_from_rx_into_str(buffer, buffer_length);
 }
 
 void uart_init(void)
@@ -115,6 +105,38 @@ void uart_write(const char *str)
 	UCA0IE |= UCTXIE;
 }
 
+
+
+
+
+
+/*
+ * Static helper functions
+ *
+ *
+ *
+ */
+
+
+
+/*
+ * Blocks until the user inputs data that ends with a \n.
+ * Reads each character one at a time into the rx_buffer.
+ */
+static void get_user_input(void)
+{
+	int rx_interrupt_already_enabled = (UCA0IE & UCRXIE);		//save the whether the rx interrupt is enabled or not (bool)
+
+	UCA0IE |= UCRXIE;											//enable the rx interrupt
+	while (!rx_data_is_complete)
+		;														//hang on until you get a complete statement from the user
+	if (!rx_interrupt_already_enabled)
+		UCA0IE &= ~UCRXIE;										//put the rx interrupt back into its previous state
+
+	rx_data_is_complete = 0;
+}
+
+
 static void init_pins(void)
 {
 	//UCA0 - see p.76 of device-specific datasheet
@@ -131,6 +153,44 @@ static void init_state(void)
 	circular_queue_construct(&tx_buffer);
 	circular_queue_construct(&rx_buffer);
 }
+
+static void read_from_rx_into_str(char *str, unsigned int str_length)
+{
+	unsigned int i = 0;
+	for (i = 0; i < str_length; i++)
+	{
+		str[i] = circular_queue_read_next_char(&rx_buffer);
+		if (str[i] == '\n')
+			break;
+	}
+	str[i] = '\0';//replace the last char with the nul
+}
+
+static void reinitialize_rx_queue(void)
+{
+	unsigned int i = 0;
+	volatile char throw_away = 0;
+
+	for (i = 0; i < num_chars_from_user; i++)
+		throw_away = circular_queue_read_next_char(&rx_buffer);
+
+	num_chars_from_user = 0;
+}
+
+
+
+
+
+
+
+
+
+/*
+ * ISRs and associated functions
+ *
+ *
+ */
+
 
 static inline void read_data_into_rx_buffer(void)
 {
