@@ -16,6 +16,9 @@
 
 void led_clear_all(void);
 void led_init(void);
+void led_pattern_blink(void);
+void led_pattern_dance(void);
+void led_pattern_loading_bar(void);
 void led_toggle_all(void);
 void led_toggle_led(unsigned char led);
 void led_set_all(void);

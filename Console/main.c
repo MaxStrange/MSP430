@@ -7,9 +7,20 @@
 
 //TODO : get my dad to show me how to do this better with function pointers
 
-#define command_length 20
-static char the_command[] = "blah\n";
-static char command[command_length];
+
+#define COMMAND_LENGTH 20
+static char command[COMMAND_LENGTH];
+
+//TODO : should really chomp each word as it comes in to strip the \n
+
+#define NUMBER_OF_COMMANDS 4
+static char *allowable_commands[NUMBER_OF_COMMANDS] =
+{
+		"load\n",
+		"blink\n",
+		"dance\n",
+		"help\n"
+};
 
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
@@ -21,44 +32,28 @@ void main(void) {
 
     while (1)
     {
+    	/*
+    	 * Reinitialize command string.
+    	 */
     	unsigned int i = 0;
-    	for (i = 0; i < command_length; i++)
+    	for (i = 0; i < COMMAND_LENGTH; i++)
     	{
     		command[i] = 0;
     	}
 
 
-    	uart_get_console_input(command, command_length);
+    	uart_get_console_input(command, COMMAND_LENGTH);
     	uart_write("You just typed: ");
     	uart_write(command);
-    	system_delay(500);
+    	system_delay(500);//give time for the uart to output
 
-    	int tf = strings_compare(command, the_command);
-
-    	if (tf)
-    	{
-        	led_toggle_led(LED1);
-        	system_delay(100);
-        	led_toggle_led(LED2);
-        	system_delay(100);
-        	led_toggle_led(LED3);
-        	system_delay(100);
-        	led_toggle_led(LED4);
-        	system_delay(100);
-        	led_toggle_led(LED5);
-        	system_delay(100);
-        	led_toggle_led(LED6);
-        	system_delay(100);
-        	led_toggle_led(LED7);
-        	system_delay(100);
-        	led_toggle_led(LED8);
-        	system_delay(100);
-    	}
+    	if (strings_compare(command, "load\n"))
+    		led_pattern_loading_bar();
+    	else if (strings_compare(command, "blink\n"))
+    		led_pattern_blink();
+    	else if (strings_compare(command, "dance\n"))
+    		led_pattern_dance();
     	else
-    	{
-    		led_toggle_all();
-    		system_delay(250);
-    		led_toggle_all();
-    	}
+    		uart_write("Usage: load, blink, or dance");
     }
 }
