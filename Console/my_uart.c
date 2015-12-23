@@ -4,6 +4,29 @@
 
 static volatile circular_queue tx_buffer;
 static volatile circular_queue rx_buffer;
+static volatile int rx_data_is_complete = 0;//bool
+
+/*
+ * Outputs an interface to the console. Then blocks until the user
+ * inputs a response. Then places the response in the buffer with a nul
+ * terminator and returns.
+ */
+void uart_get_console_input(char *buffer, unsigned int buffer_length)
+{
+	uart_write("Please enter a command. ");
+
+	UCA0IE |= UCRXIE;
+	while (!rx_data_is_complete)
+		;//hang on until you get a complete statement from the user
+	UCA0IE &= ~UCRXIE;
+
+	unsigned int i = 0;
+	for (i = 0; i < buffer_length; i++)
+	{
+		buffer[i] = circular_queue_read_next_char(&rx_buffer);
+	}
+	buffer[buffer_length - 1] = '\0';
+}
 
 void uart_init(void)
 {
@@ -49,7 +72,7 @@ void uart_init(void)
 
 	UCA0CTL1 &= ~UCSWRST;
 
-	UCA0IE |= UCRXIE;
+	UCA0IE |= UCRXIE;//use for echoing
 }
 
 /*
@@ -86,12 +109,23 @@ static void init_state(void)
 	circular_queue_construct(&rx_buffer);
 }
 
+/*
+ * Used for echoing the user's input. Loads
+ * each byte as it is received back into the sending buffer.
+ */
 static inline void load_received_byte_into_tx(void)
 {
 	unsigned char c = UCA0RXBUF;//reading from the buffer resets the interrupt flag
 	circular_queue_write_char(&tx_buffer, c);
 	UCA0IFG |= UCTXIFG;
 	UCA0IE |= UCTXIE;
+}
+
+static inline void read_data_into_rx_buffer(void)
+{
+	unsigned char c = UCA0RXBUF;//reading from the buffer resets the interrupt flag
+	circular_queue_write_char(&rx_buffer, c);
+	rx_data_is_complete = (c == '\n');
 }
 
 /*
@@ -120,7 +154,8 @@ __interrupt void USCI_A0_ISR(void)
 		break;
 
 	case 0x02://UCRXIFG -- received some data in the rx buf
-		load_received_byte_into_tx();
+		load_received_byte_into_tx(); //use for echoing
+//		read_data_into_rx_buffer();
 		break;
 
 	case 0x04://UCTXIFG -- sent some data from the tx buf

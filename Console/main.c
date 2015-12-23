@@ -4,6 +4,12 @@
 #include "my_led.h"
 #include "my_system.h"
 
+//TODO : get my dad to show me how to do this better with function pointers
+
+#define command_length 20
+static char the_command[] = "blah\n";
+static char command[command_length];
+
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 
@@ -14,16 +20,57 @@ void main(void) {
 
     while (1)
     {
-    	;
-//    	led_toggle_all();
-//    	uart_write("hello!");
-//    	system_delay(100);
-    }
+    	uart_get_console_input(command, command_length);
+//    	uart_write(command);
 
-    //-Interrupts do not have to turn on other interrupts when done with their code - the processor does it for you
-    //-General interrupt enable bit (GIE) turns on or off MASKABLE interrupts (peripheral pin interrupts), and each one can be turned on or off separately
-    //-Interrupt latency is six cycles
-    //-The instruction right after an enable interrupt instruction is always executed - so don't put enable followed immediately by disable
-    //-Nesting is only available if you set the GIE inside an ISR. After the ISR returns, the settings switch back to whatever they were OUTSIDE the ISR.
-    //-If you have turned on nesting, ANY interrupt (regardless of priorities) will interrupt an already going ISR
+
+    	led_toggle_led(LED1);
+    	system_delay(100);
+    	led_toggle_led(LED2);
+    	system_delay(100);
+    	led_toggle_led(LED3);
+    	system_delay(100);
+    	led_toggle_led(LED4);
+    	system_delay(100);
+    	led_toggle_led(LED5);
+    	system_delay(100);
+    	led_toggle_led(LED6);
+    	system_delay(100);
+    	led_toggle_led(LED7);
+    	system_delay(100);
+    	led_toggle_led(LED8);
+    	system_delay(100);
+
+
+//    	int tf = 0;
+//    	unsigned int i = 0;
+//    	for (i = 0; i < command_length; i++)
+//    	{
+//    		if (command[i] == '\0')
+//    		{
+//    			tf = (the_command[i] == '\0');
+//    			break;
+//    		}
+//    		else if (command[i] != the_command[i])
+//    		{
+//    			tf = 0;
+//    			break;
+//    		}
+//    		else
+//    		{
+//    			tf = 1;
+//    		}
+//    	}
+//
+//    	if (tf)
+//    	{
+//    		led_toggle_all();
+//    	}
+//    	else
+//    	{
+//    		led_toggle_all();
+//    		system_delay(250);
+//    		led_toggle_all();
+//    	}
+    }
 }

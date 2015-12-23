@@ -8,6 +8,7 @@
 #ifndef MY_UART_H_
 #define MY_UART_H_
 
+void uart_get_console_input(char *buffer, unsigned int buffer_length);
 void uart_init(void);
 void uart_write(char *str);
 

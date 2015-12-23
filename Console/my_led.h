@@ -13,7 +13,11 @@
 #define LED7 0x40//0100 0000
 #define LED8 0x80//1000 0000
 
+
+void led_clear_all(void);
 void led_init(void);
 void led_toggle_all(void);
+void led_toggle_led(unsigned char led);
+void led_set_all(void);
 
 #endif /* MY_LED_H_ */
