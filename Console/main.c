@@ -4,23 +4,13 @@
 #include "my_led.h"
 #include "my_system.h"
 #include "my_strings.h"
+#include "console.h"
 
-//TODO : get my dad to show me how to do this better with function pointers
-
-
-#define COMMAND_LENGTH 20
-static char command[COMMAND_LENGTH];
+#define INPUT_LENGTH 20
+static char console_input[INPUT_LENGTH];
 
 //TODO : should really chomp each word as it comes in to strip the \n
 
-#define NUMBER_OF_COMMANDS 4
-static char *allowable_commands[NUMBER_OF_COMMANDS] =
-{
-		"load\n",
-		"blink\n",
-		"dance\n",
-		"help\n"
-};
 
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
@@ -33,27 +23,20 @@ void main(void) {
     while (1)
     {
     	/*
-    	 * Reinitialize command string.
+    	 * Reinitialize console input string.
     	 */
     	unsigned int i = 0;
-    	for (i = 0; i < COMMAND_LENGTH; i++)
+    	for (i = 0; i < INPUT_LENGTH; i++)
     	{
-    		command[i] = 0;
+    		console_input[i] = 0;
     	}
 
 
-    	uart_get_console_input(command, COMMAND_LENGTH);
+    	uart_get_console_input(console_input, INPUT_LENGTH);
     	uart_write("You just typed: ");
-    	uart_write(command);
+    	uart_write(console_input);
     	system_delay(500);//give time for the uart to output
 
-    	if (strings_compare(command, "load\n"))
-    		led_pattern_loading_bar();
-    	else if (strings_compare(command, "blink\n"))
-    		led_pattern_blink();
-    	else if (strings_compare(command, "dance\n"))
-    		led_pattern_dance();
-    	else
-    		uart_write("Usage: load, blink, or dance");
+    	console_execute_command(console_input);
     }
 }
