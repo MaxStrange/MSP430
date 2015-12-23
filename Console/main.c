@@ -3,6 +3,7 @@
 #include "my_uart.h"
 #include "my_led.h"
 #include "my_system.h"
+#include "my_strings.h"
 
 //TODO : get my dad to show me how to do this better with function pointers
 
@@ -32,20 +33,7 @@ void main(void) {
     	uart_write(command);
     	system_delay(500);
 
-    	int tf = 0;
-    	for (i = 0; i < command_length; i++)
-    	{
-    		if ((command[i] == '\0') || (the_command[i] == '\0'))
-    		{
-    			tf = ((the_command[i] == '\0') && (command[i] == '\0'));
-    			break;
-    		}
-    		else if (command[i] != the_command[i])
-    		{
-    			tf = 0;
-    			break;
-    		}
-    	}
+    	int tf = strings_compare(command, the_command);
 
     	if (tf)
     	{

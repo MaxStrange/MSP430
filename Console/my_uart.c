@@ -11,6 +11,7 @@
 static volatile circular_queue tx_buffer;
 static volatile circular_queue rx_buffer;
 static volatile int rx_data_is_complete = 0;//bool
+static volatile unsigned int num_chars_from_user = 0;
 
 /*
  * Outputs an interface to the console. Then blocks until the user
@@ -19,13 +20,31 @@ static volatile int rx_data_is_complete = 0;//bool
  */
 void uart_get_console_input(char *buffer, unsigned int buffer_length)
 {
-	uart_write("Please enter a command. ");
+	do
+	{
+		/*
+		 * Reinitialize the rx queue - it may be full of characters that the user has dumped in with a command that was too long
+		 */
+		unsigned int i = 0;
+		volatile char throw_away = 0;
+		for (i = 0; i < num_chars_from_user; i++)
+			throw_away = circular_queue_read_next_char(&rx_buffer);
+		num_chars_from_user = 0;
 
-	UCA0IE |= UCRXIE;
-	while (!rx_data_is_complete)
-		;//hang on until you get a complete statement from the user
-	rx_data_is_complete = 0;
-	UCA0IE &= ~UCRXIE;
+		uart_write("Please enter a command: ");
+
+		int rx_interrupt_already_enabled = (UCA0IE & UCRXIE);		//save the whether the rx interrupt is enabled or not (bool)
+
+		UCA0IE |= UCRXIE;											//enable the rx interrupt
+		while (!rx_data_is_complete)
+			;														//hang on until you get a complete statement from the user
+		if (!rx_interrupt_already_enabled)
+			UCA0IE &= ~UCRXIE;										//put the rx interrupt back into its previous state
+
+		rx_data_is_complete = 0;
+
+	} while (num_chars_from_user >= buffer_length);//need one less character from user than buffer length so we can null terminate
+	num_chars_from_user = 0;
 
 	unsigned int i = 0;
 	for (i = 0; i < buffer_length; i++)
@@ -138,6 +157,7 @@ static inline void read_data_into_rx_buffer(void)
 	unsigned char c = UCA0RXBUF;//reading from the buffer resets the interrupt flag
 	circular_queue_write_char(&rx_buffer, c);
 	rx_data_is_complete = (c == '\n');
+	num_chars_from_user++;
 }
 
 /*
