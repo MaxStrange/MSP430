@@ -1,8 +1,20 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-typedef void(*function_pointer)(void);
 
+
+/*
+ * defines
+ */
+
+#define INPUT_LENGTH 20
+
+
+/*
+ * typedefs
+ */
+
+typedef void(*function_pointer)(void);
 typedef struct
 {
 	const char *name;
@@ -10,8 +22,17 @@ typedef struct
 	const char *help;
 } command;
 
+/*
+ * API functions
+ */
 
-void console_execute_command(const char *cmd);
+void console_go(void);
+
+/*
+ * static functions
+ */
+
+static void execute_command(const char *cmd);
 
 
 

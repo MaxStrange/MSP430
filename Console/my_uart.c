@@ -53,8 +53,9 @@ void uart_get_console_input(char *buffer, unsigned int buffer_length)
 		if (buffer[i] == '\n')
 			break;
 	}
-	unsigned int last = (i + 1) >= buffer_length ? buffer_length - 1 : i + 1;
-	buffer[last] = '\0';
+	buffer[i] = '\0';//replace the last char with the nul
+//	unsigned int last = (i + 1) >= buffer_length ? buffer_length - 1 : i + 1;
+//	buffer[last] = '\0';
 }
 
 void uart_init(void)
