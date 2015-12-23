@@ -20,57 +20,57 @@ void main(void) {
 
     while (1)
     {
+    	unsigned int i = 0;
+    	for (i = 0; i < command_length; i++)
+    	{
+    		command[i] = 0;
+    	}
+
+
     	uart_get_console_input(command, command_length);
-//    	uart_write(command);
+    	uart_write("You just typed: ");
+    	uart_write(command);
+    	system_delay(500);
 
+    	int tf = 0;
+    	for (i = 0; i < command_length; i++)
+    	{
+    		if ((command[i] == '\0') || (the_command[i] == '\0'))
+    		{
+    			tf = ((the_command[i] == '\0') && (command[i] == '\0'));
+    			break;
+    		}
+    		else if (command[i] != the_command[i])
+    		{
+    			tf = 0;
+    			break;
+    		}
+    	}
 
-    	led_toggle_led(LED1);
-    	system_delay(100);
-    	led_toggle_led(LED2);
-    	system_delay(100);
-    	led_toggle_led(LED3);
-    	system_delay(100);
-    	led_toggle_led(LED4);
-    	system_delay(100);
-    	led_toggle_led(LED5);
-    	system_delay(100);
-    	led_toggle_led(LED6);
-    	system_delay(100);
-    	led_toggle_led(LED7);
-    	system_delay(100);
-    	led_toggle_led(LED8);
-    	system_delay(100);
-
-
-//    	int tf = 0;
-//    	unsigned int i = 0;
-//    	for (i = 0; i < command_length; i++)
-//    	{
-//    		if (command[i] == '\0')
-//    		{
-//    			tf = (the_command[i] == '\0');
-//    			break;
-//    		}
-//    		else if (command[i] != the_command[i])
-//    		{
-//    			tf = 0;
-//    			break;
-//    		}
-//    		else
-//    		{
-//    			tf = 1;
-//    		}
-//    	}
-//
-//    	if (tf)
-//    	{
-//    		led_toggle_all();
-//    	}
-//    	else
-//    	{
-//    		led_toggle_all();
-//    		system_delay(250);
-//    		led_toggle_all();
-//    	}
+    	if (tf)
+    	{
+        	led_toggle_led(LED1);
+        	system_delay(100);
+        	led_toggle_led(LED2);
+        	system_delay(100);
+        	led_toggle_led(LED3);
+        	system_delay(100);
+        	led_toggle_led(LED4);
+        	system_delay(100);
+        	led_toggle_led(LED5);
+        	system_delay(100);
+        	led_toggle_led(LED6);
+        	system_delay(100);
+        	led_toggle_led(LED7);
+        	system_delay(100);
+        	led_toggle_led(LED8);
+        	system_delay(100);
+    	}
+    	else
+    	{
+    		led_toggle_all();
+    		system_delay(250);
+    		led_toggle_all();
+    	}
     }
 }

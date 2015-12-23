@@ -2,6 +2,12 @@
 #include "my_uart.h"
 #include "circular_queue.h"
 
+/*
+ * Debug states
+ */
+#define echoing 0
+
+
 static volatile circular_queue tx_buffer;
 static volatile circular_queue rx_buffer;
 static volatile int rx_data_is_complete = 0;//bool
@@ -18,14 +24,18 @@ void uart_get_console_input(char *buffer, unsigned int buffer_length)
 	UCA0IE |= UCRXIE;
 	while (!rx_data_is_complete)
 		;//hang on until you get a complete statement from the user
+	rx_data_is_complete = 0;
 	UCA0IE &= ~UCRXIE;
 
 	unsigned int i = 0;
 	for (i = 0; i < buffer_length; i++)
 	{
 		buffer[i] = circular_queue_read_next_char(&rx_buffer);
+		if (buffer[i] == '\n')
+			break;
 	}
-	buffer[buffer_length - 1] = '\0';
+	unsigned int last = (i + 1) >= buffer_length ? buffer_length - 1 : i + 1;
+	buffer[last] = '\0';
 }
 
 void uart_init(void)
@@ -72,7 +82,9 @@ void uart_init(void)
 
 	UCA0CTL1 &= ~UCSWRST;
 
-	UCA0IE |= UCRXIE;//use for echoing
+#if echoing
+	UCA0IE |= UCRXIE;
+#endif
 }
 
 /*
@@ -154,8 +166,10 @@ __interrupt void USCI_A0_ISR(void)
 		break;
 
 	case 0x02://UCRXIFG -- received some data in the rx buf
-		load_received_byte_into_tx(); //use for echoing
-//		read_data_into_rx_buffer();
+#if echoing
+		load_received_byte_into_tx();
+#endif
+		read_data_into_rx_buffer();
 		break;
 
 	case 0x04://UCTXIFG -- sent some data from the tx buf
