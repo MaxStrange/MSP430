@@ -16,7 +16,6 @@ void uart_write(char *str);
 
 static void init_pins(void);
 static void init_state(void);
-static void load_received_byte_into_tx(void);//used for echoing
 static void send_next_byte(void);
 
 

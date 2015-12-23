@@ -2,11 +2,6 @@
 #include "my_uart.h"
 #include "circular_queue.h"
 
-/*
- * Debug states
- */
-#define echoing 0
-
 
 static volatile circular_queue tx_buffer;
 static volatile circular_queue rx_buffer;
@@ -101,10 +96,6 @@ void uart_init(void)
 	UCA0MCTLW |= 0x1180;
 
 	UCA0CTL1 &= ~UCSWRST;
-
-#if echoing
-	UCA0IE |= UCRXIE;
-#endif
 }
 
 /*
@@ -141,18 +132,6 @@ static void init_state(void)
 	circular_queue_construct(&rx_buffer);
 }
 
-/*
- * Used for echoing the user's input. Loads
- * each byte as it is received back into the sending buffer.
- */
-static inline void load_received_byte_into_tx(void)
-{
-	unsigned char c = UCA0RXBUF;//reading from the buffer resets the interrupt flag
-	circular_queue_write_char(&tx_buffer, c);
-	UCA0IFG |= UCTXIFG;
-	UCA0IE |= UCTXIE;
-}
-
 static inline void read_data_into_rx_buffer(void)
 {
 	unsigned char c = UCA0RXBUF;//reading from the buffer resets the interrupt flag
@@ -187,9 +166,6 @@ __interrupt void USCI_A0_ISR(void)
 		break;
 
 	case 0x02://UCRXIFG -- received some data in the rx buf
-#if echoing
-		load_received_byte_into_tx();
-#endif
 		read_data_into_rx_buffer();
 		break;
 

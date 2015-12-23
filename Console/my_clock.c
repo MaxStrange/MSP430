@@ -49,7 +49,7 @@ static void init_pins(void)
 {
 	//Have to set up the pins that will take in the onboard XT1 - see p.91 of datasheet (not UG)
 	PJSEL0 |= BIT4 + BIT5;
-	PJDIR |= BIT4 + BIT5;//TODO : check if this line made any difference in the external crystal clock source
+	PJDIR |= BIT4 + BIT5;
 }
 
 
