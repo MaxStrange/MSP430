@@ -18,7 +18,7 @@ void clock_init(void)
 	CSCTL2 |= SELA_0 + SELS_3 + SELM_3;         // Set the various clock sources: ACLK = XT1; MCLK and SMCLK = DCO
 	CSCTL3 |= DIVA_0 + DIVS_3 + DIVM_3;         // set all dividers - ACLK / 1; SMCLK and MCLK / 8 (so 1 MHz).
 	CSCTL4 |= XT1DRIVE_0;					   // set the XT1 oscillator current - lowest possible
-	CSCTL4 &= ~XT1OFF;						   // turns on the XT1 as long as XT2 is selected by port selection and not in bypass mode
+	CSCTL4 &= ~XT1OFF;						   // turns on the XT1 as long as XT1 is selected by port selection and not in bypass mode
 
 
     /*
@@ -48,8 +48,9 @@ void clock_init(void)
 static void init_pins(void)
 {
 	//Have to set up the pins that will take in the onboard XT1 - see p.91 of datasheet (not UG)
-	PJSEL0 |= BIT4 + BIT5;
-	PJDIR |= BIT4 + BIT5;
+	PJSEL1 &= ~BIT4;
+	PJSEL0 |= BIT4;
+	//datasheet says we don't care about the DIR register for XT1
 }
 
 
