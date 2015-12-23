@@ -26,13 +26,14 @@ typedef struct
  * API functions
  */
 
-void console_go(void);
+const char * console_get_help_str(void);
+int console_go(void);//bool
 
 /*
  * static functions
  */
 
-static void execute_command(const char *cmd);
+static int execute_command(const char *cmd);//bool
 
 
 

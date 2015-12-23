@@ -103,7 +103,7 @@ void uart_init(void)
  * the UART. Does not block. Requires global interrupts
  * to be on.
  */
-void uart_write(char *str)
+void uart_write(const char *str)
 {
 	while (*str != '\0')
 	{

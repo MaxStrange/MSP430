@@ -10,7 +10,7 @@
 
 void uart_get_console_input(char *buffer, unsigned int buffer_length);
 void uart_init(void);
-void uart_write(char *str);
+void uart_write(const char *str);
 
 
 

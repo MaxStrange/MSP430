@@ -17,6 +17,11 @@ void main(void) {
 
     while (1)
     {
-    	console_go();
+    	int worked = console_go();//bool
+    	if (!worked)
+    	{
+    		const char *help_str = console_get_help_str();
+    		uart_write(help_str);
+    	}
     }
 }
