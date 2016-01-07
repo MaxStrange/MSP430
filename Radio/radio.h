@@ -6,7 +6,7 @@
 
 
 #define CMD_WRD_READ_RX_PAYLOAD			0x61
-#define CMD_WRD_WRITE_TX_PAYLOAD		0xA0
+#define CMD_WRD_WRITE_TX_PAYLOAD		0xA0		//remember to write LSByte first (MSbit in each byte first)
 #define CMD_WRD_FLUSH_TX				0xE1
 #define CMD_WRD_FLUSH_RX				0xE2
 #define CMD_WRD_REUSE_TX_PL				0xE3
