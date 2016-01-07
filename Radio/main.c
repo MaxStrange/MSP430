@@ -1,11 +1,11 @@
 #include <msp430.h> 
 #include "my_led.h"
 #include "my_button.h"
-#include "spi.h"
+#include "radio.h"
 
 static inline void handle_rx_data(void);
 
-static volatile int leds_are_on = 0;
+static volatile int which_led_is_on = 0;
 
 /*
  * main.c
@@ -18,7 +18,7 @@ int main(void) {
      */
     led_init();
     button_init();
-    spi_init();
+    radio_init();
 
 
     /*
@@ -47,28 +47,21 @@ __interrupt void PORT4_ISR(void)
 	if (!BUTTON_PRESSED)
 		return;
 
-	UCB0TXBUF = leds_are_on;
-	UCB0IE |= UCTXIE;
+	radio_write(which_led_is_on);
 
 	P4IFG = 0x00;//Make sure you clear the interrupt flag before you return
 }
 
 static inline void handle_rx_data(void)
 {
-	int data = UCB0RXBUF;
+	char data = radio_read();
 
-//	if (data)
-//		led_on();
-//	else
-//		led_off();
+	which_led_is_on++;
 
-//	leds_are_on = !leds_are_on;
-	leds_are_on++;
+	if (which_led_is_on > 8)
+		which_led_is_on = 0;
 
-	if (leds_are_on > 8)
-		leds_are_on = 0;
-
-	led_on_i(leds_are_on);
+	led_on_i(which_led_is_on);
 }
 
 #pragma vector=USCI_B0_VECTOR
