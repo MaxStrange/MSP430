@@ -70,8 +70,8 @@ void spi_init(void)
 
 	UCB0CTLW0 |= UCSWRST;							//software reset
 
-	UCB0CTLW0 |= UCMSB | UCMST | UCSYNC | UCCKPL;	//Inactive high, synchronous, master, msb first
-	UCB0CTLW0 |= UCSSEL_2 | UCMODE_2 | UCSTEM;		//use SMCLK, 4 pin mode with active low on CSN/STE/SS
+	UCB0CTLW0 |= UCMSB | UCMST | UCSYNC;			//Inactive low, synchronous, master, msb first
+	UCB0CTLW0 |= UCSSEL_2 | UCMODE_2 | UCSTEM;		//use SMCLK, 4 pin mode with active low on CSN (STE)
 	UCB0BR0 |= 0x02;
 	UCB0BR1 = 0;									//configure clock freq
 	UCB0STATW |= UCLISTEN;							//enable loopback mode
