@@ -1,7 +1,3 @@
-/*
- * This program illustrates how to use interrupts to service a push button request.
- */
-
 #include <msp430.h> 
 #include "my_led.h"
 #include "my_button.h"
