@@ -62,7 +62,7 @@ void radio_init(void)
 	 * 1		..
 	 * 0		..
 	 */
-	unsigned char en_rx_addr_command = CMD_WRITE_TO_REGISTER(REGISTER_EN_RX_ADDR);
+	unsigned char en_rx_addr_command = CMD_WRD_WRITE_TO_REGISTER(REGISTER_ADDRESS_EN_RX_ADDR);
 	unsigned char en_rx_addr_write = (1 << 1) | (1 << 0);//enable pipes 0 and 1
 	radio_write(en_rx_addr_command);
 	radio_write(en_rx_addr_write);
@@ -118,8 +118,8 @@ void radio_init(void)
 	 * 0		TX full flag - 1 means TX FIFO is full
 	 */
 	//let's clear the interrupt bits, since on power on they should be zero and if not, they are certainly meaningless
-	unsigned char status_addr_command = CMD_WRITE_TO_REGISTER(REGISTER_ADDRESS_STATUS);
-	unsigned char status_addr_write = (1 << 6) | (1 << 5) | (1 << 4);
+	unsigned char status_addr_command = CMD_WRD_WRITE_TO_REGISTER(REGISTER_ADDRESS_STATUS);
+	static const unsigned char status_addr_write = (1 << 6) | (1 << 5) | (1 << 4);
 	radio_write(status_addr_command);
 	radio_write(status_addr_write);
 
@@ -127,15 +127,23 @@ void radio_init(void)
 	 * Data pipe addresses for receiving
 	 * Must be sent LSByte first, with MSbit in each byte first
 	 */
-	unsigned char rx_pipe_0_addr_command = CMD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_ADDR_P0);
-	unsigned char rx_pipe_0_addr_write = 0x123456789A;//MCU most likely sends as 0x123456789A, but nrf READS it as: 0x9A78563412
+	unsigned char rx_pipe_0_addr_command = CMD_WRD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_ADDR_P0);
+	static const unsigned int rx_pipe_0_addr_write = 0x123456789A;//nrf READS it as: 0x9A78563412
 	radio_write(rx_pipe_0_addr_command);
-	radio_write(rx_pipe_0_addr_write);
+	radio_write((rx_pipe_0_addr_write & 0x00000000FF) >> 0);//send LSByte first
+	radio_write((rx_pipe_0_addr_write & 0x000000FF00) >> 8);
+	radio_write((rx_pipe_0_addr_write & 0x0000FF0000) >> 16);
+	radio_write((rx_pipe_0_addr_write & 0x00FF000000) >> 24);
+	radio_write((rx_pipe_0_addr_write & 0xFF00000000) >> 32);
 
-	unsigned char rx_pipe_1_addr_command = CMD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_ADDR_P1);
-	unsigned char rx_pipe_1_addr_write = 0x133456789A;
+	unsigned char rx_pipe_1_addr_command = CMD_WRD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_ADDR_P1);
+	static const unsigned int rx_pipe_1_addr_write = 0x133456789A;
 	radio_write(rx_pipe_1_addr_command);
-	radio_write(rx_pipe_1_addr_write);
+	radio_write((rx_pipe_1_addr_write & 0x00000000FF) >> 0);//send LSByte first
+	radio_write((rx_pipe_1_addr_write & 0x000000FF00) >> 8);
+	radio_write((rx_pipe_1_addr_write & 0x0000FF0000) >> 16);
+	radio_write((rx_pipe_1_addr_write & 0x00FF000000) >> 24);
+	radio_write((rx_pipe_1_addr_write & 0xFF00000000) >> 32);
 
 	/*
 	 * RX_PW_Pn		RX payload width pipe n
@@ -145,11 +153,15 @@ void radio_init(void)
 	 * defaults to 0 (pipe not used)
 	 */
 	//let's do one byte on each pipe that we are using
-	unsigned char rx_pipe_0_width_addr_command = CMD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_PYLD_WID_P0);
-	unsigned char rx_pipe_0_width_addr_write = 1;
+	unsigned char rx_pipe_0_width_addr_command = CMD_WRD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_PYLD_WID_P0);
+	static const unsigned char rx_pipe_0_width_addr_write = 1;
+	radio_write(rx_pipe_0_width_addr_command);
+	radio_write(rx_pipe_0_width_addr_write);
 
-	unsigned char rx_pipe_1_width_addr_command = CMD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_PYLD_WID_P1);
-	unsigned char rx_pipe_1_width_addr_write = 1;
+	unsigned char rx_pipe_1_width_addr_command = CMD_WRD_WRITE_TO_REGISTER(REGISTER_ADDRESS_RX_PYLD_WID_P1);
+	static const unsigned char rx_pipe_1_width_addr_write = 1;
+	radio_write(rx_pipe_1_width_addr_command);
+	radio_write(rx_pipe_1_width_addr_write);
 
 	/*
 	 * DYNPD	Enable dynamic payload length
