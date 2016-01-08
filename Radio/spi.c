@@ -11,10 +11,10 @@ void spi_init(void)
 	P1SEL1 |= MOSI | MISO;				//pins P1.6 and P1.7 are MOSI and MISO respectively
 	P1SEL0 &= ~(MOSI | MISO);
 
-//	P1SEL1 |= CSN;						//pin P1.3 is STE
-//	P1SEL0 &= ~CSN;
-	P1DIR |= CSN;
-	P1OUT |= CSN;
+	P1SEL1 |= CSN;						//pin P1.3 is STE
+	P1SEL0 &= ~CSN;
+//	P1DIR |= CSN;
+//	P1OUT |= CSN;
 
 	P2SEL1 |= CLK;						//pin P2.2 is CLK
 	P2SEL0 &= ~CLK;
@@ -32,7 +32,7 @@ void spi_init(void)
 	UCB0CTLW0 |= UCSWRST;							//software reset
 
 	UCB0CTLW0 |= UCMSB | UCMST | UCSYNC;			//Inactive low, synchronous, master, msb first
-	UCB0CTLW0 |= UCSSEL_2;//SMCLK 3-pin mode | UCMODE_2 | UCSTEM;		//use SMCLK, 4 pin mode with active low on CSN (STE)
+	UCB0CTLW0 |= UCSSEL_2 | UCMODE_2 | UCSTEM;		//use SMCLK, 4 pin mode with active low on CSN (STE)
 	UCB0BR0 |= 0x02;
 	UCB0BR1 = 0;									//configure clock freq
 	UCB0STATW |= UCLISTEN;							//enable loopback mode
