@@ -61,7 +61,7 @@
  * over SPI.
  */
 
-void radio_init(void);
+void radio_init(volatile int *which_led_is_on);
 unsigned char radio_read(void);
 void radio_write(unsigned char c);
 
