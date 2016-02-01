@@ -15,8 +15,8 @@ void button_init(void)
     P2OUT |= CONFIRM | REJECT;		//set resistors to be pull-ups, rather than downs
 
     //interrupts
-    P2IFG = 0x00;			//make sure the interrupt flag is clear
-    P2IES |= BUTTON;		//edge select from high to low (since signal is low when button is pressed)
-    P2IE |= BUTTON;			//enable interrupt on button's pin
+    P2IFG = 0x00;					//make sure the interrupt flag is clear
+    P2IES |= CONFIRM | REJECT;		//edge select from high to low (since signal is low when button is pressed)
+    P2IE |= CONFIRM | REJECT;		//enable interrupt on button's pin
 }
 
