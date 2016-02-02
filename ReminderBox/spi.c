@@ -57,7 +57,7 @@ inline unsigned char spi_tx_byte(unsigned char byte)
 {
 	UCA0TXBUF = byte;
 
-	while (!(IFG2 & UCA0TXIFG));
+	while (!(IFG2 & UCA0TXIFG));//TODO : May need to be UCA0RXIFG
 
 	return UCA0RXBUF;
 }

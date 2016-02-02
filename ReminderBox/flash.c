@@ -5,24 +5,17 @@
 #include "flash.h"
 
 
-static address_t current_location;
-static const address_t first_time_powered_on = { 0x00, 0x01, 0x02 };//TODO : change this to be a spot in memory where we can store whether or not this is the first time powered on
+static address_t current_location = { 0x00, 0x00, 0x00 };
+
+
+
+static void increment_current_location(void);
 
 
 void flash_init(void)
 {
 	spi_init();
 	spi_chip_enable_high();
-
-	if (flash_read_byte_at(&first_time_powered_on))//should come out as 0xFF if it is the first time powered on
-	{//if this is the first time powered on, initialize the memory with a marker and update the first time powered on location to be false
-		flash_write_byte_at(&current_location, 0x00);
-		flash_write_byte_at(&first_time_powered_on, 0x00);
-	}
-	else
-	{//this is not the first time we have turned on, so there is useful memory somewhere; go find it
-		flash_find_first_saved(&current_location);
-	}
 }
 
 /*
@@ -31,7 +24,9 @@ void flash_init(void)
  */
 unsigned char flash_read_next_byte(void)
 {
-	return 0x00;
+	unsigned char byte = flash_read_byte_at(&current_location);
+	increment_current_location();
+	return byte;
 }
 
 /*
@@ -40,7 +35,18 @@ unsigned char flash_read_next_byte(void)
  */
 unsigned char flash_read_byte_at(const address_t * const address)
 {
-	return 0x00;
+	spi_chip_enable_low();
+
+	spi_tx_byte(READ);
+	spi_tx_byte(address->msb);
+	spi_tx_byte(address->middle);
+	spi_tx_byte(address->lsb);
+	unsigned char byte = spi_tx_byte(NOP);
+
+	spi_chip_enable_high();
+
+
+	return byte;
 }
 
 /*
@@ -50,6 +56,8 @@ unsigned char flash_read_byte_at(const address_t * const address)
  */
 void flash_write_next_byte(unsigned char to_write)
 {
+	flash_write_byte_at(&current_location, to_write);
+	increment_current_location();
 }
 
 /*
@@ -59,20 +67,39 @@ void flash_write_next_byte(unsigned char to_write)
  */
 void flash_write_byte_at(const address_t * const address, unsigned char to_write)
 {
+	spi_chip_enable_low();
+	spi_tx_byte(WREN);
+	spi_chip_enable_high();
+
+	__delay_cycles(15);				//give enough time for CE to change
+
+	spi_chip_enable_low();
+	spi_tx_byte(PP);
+	spi_tx_byte(address->msb);
+	spi_tx_byte(address->middle);
+	spi_tx_byte(address->lsb);
+	spi_tx_byte(to_write);
+	spi_chip_enable_high();
+
+	__delay_cycles(15);				//give enough time for CE to change
+
+	spi_chip_enable_low();
+	spi_tx_byte(WRDI);
+	spi_chip_enable_high();
 }
 
-/*
- * Moves the current working address to the first useful location.
- */
-void flash_move_to_first_saved(void)
-{
-}
 
-/*
- * Fills in the given address with the first address found that contains useful data.
- */
-void flash_find_first_saved(address_t *address)
-{
 
+static void increment_current_location(void)
+{
+	current_location.lsb += 1;
+	if (current_location.lsb == 0x00)
+	{
+		current_location.middle += 1;
+		if (current_location.middle == 0x00)
+		{
+			current_location.msb += 1;
+		}
+	}
 }
 

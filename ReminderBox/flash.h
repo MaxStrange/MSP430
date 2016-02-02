@@ -1,6 +1,40 @@
 #ifndef FLASH_H_
 #define FLASH_H_
 
+/*
+ * Command words
+ */
+
+
+/*
+ * Configuration commands
+ */
+#define NOP		0x00	//NOP
+#define RDSR	0x05	//Read status register
+#define WRSR	0x01	//Write status register
+#define RDCR	0x35	//Read configuration register
+
+/*
+ * Read commands
+ */
+#define READ	0x03	//read
+#define HS_READ	0x0B	//read high speed
+
+/*
+ * Write commands
+ */
+#define WREN	0x06	//write enable
+#define WRDI	0x04	//write disable
+#define PP		0x02	//page program
+
+/*
+ * Sleep
+ */
+#define DPD		0xB9	//deep power down mode
+#define RDPD	0xAB	//release from deep power down
+
+
+
 typedef struct
 {
 	unsigned char msb;
@@ -13,8 +47,6 @@ unsigned char flash_read_next_byte(void);
 unsigned char flash_read_byte_at(const address_t * const address);
 void flash_write_next_byte(unsigned char to_write);
 void flash_write_byte_at(const address_t * const address, unsigned char to_write);
-void flash_move_to_first_saved(void);//moves the pointer to the first saved byte
-void flash_find_first_saved(address_t *address);//fills in the given address
 
 
 
