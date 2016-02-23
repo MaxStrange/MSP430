@@ -9,13 +9,13 @@ void spi_init(void)
 	 * See p.44 of device-specific datasheet
 	 */
 	P1SEL |= SCLK;					//SPI SCLK
-	P1SEL2 &= ~SCLK;
+	P1SEL2 |= SCLK;
 
 	P1SEL |= MISO;					//SPI SDO
-	P1SEL2 &= ~MISO;
+	P1SEL2 |= MISO;
 
 	P1SEL |= MOSI;					//SPI SDI
-	P1SEL2 &= ~MOSI;
+	P1SEL2 |= MOSI;
 
 	P1DIR |= CE;					//SPI CE
 	P1OUT |= CE;					//Active low, so set it high

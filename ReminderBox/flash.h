@@ -12,7 +12,6 @@
 #define NOP		0x00	//NOP
 #define RDSR	0x05	//Read status register
 #define WRSR	0x01	//Write status register
-#define RDCR	0x35	//Read configuration register
 
 /*
  * Read commands

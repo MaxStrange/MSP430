@@ -1,4 +1,5 @@
 #include <msp430.h>
+#include <stdint.h>
 
 #include "clock.h"
 
@@ -10,11 +11,11 @@
  */
 
 
-static volatile unsigned long millis = 0;	//The number of milliseconds so far ticked					//at least 32 bits in size (so rollover at 4294967295)
-static volatile unsigned long seconds = 0;	//The number of seconds so far ticked
+static volatile uint32_t millis = 0;	//The number of milliseconds so far ticked					//at least 32 bits in size (so rollover at 4294967295)
+static volatile uint32_t seconds = 0;	//The number of seconds so far ticked
 
 /*
- * Sets the clock to 1MHz, with SMCLK and MCLK sourced from
+ * Sets the clock to 8MHz, with SMCLK and MCLK sourced from
  * the internal DCO.
  */
 void clock_init(void)
@@ -27,9 +28,9 @@ void clock_init(void)
 /*
  * Blocks for the given number of milliseconds.
  */
-void clock_delay_ms(unsigned int to_delay)
+void clock_delay_ms(uint32_t to_delay)
 {
-	unsigned long until = millis + to_delay;
+	uint32_t until = millis + to_delay;
 
 	while (millis < until)
 		;//block until delay is over
@@ -38,7 +39,7 @@ void clock_delay_ms(unsigned int to_delay)
 /*
  * Gets the number of milliseconds since clock_init was called.
  */
-unsigned long clock_get_ms(void)
+uint32_t clock_get_ms(void)
 {
 	return millis;
 }
@@ -46,7 +47,7 @@ unsigned long clock_get_ms(void)
 /*
  * Gets the number of seconds since clock_init was called.
  */
-unsigned long clock_get_seconds(void)
+uint32_t clock_get_seconds(void)
 {
 	return seconds;
 }
