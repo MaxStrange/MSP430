@@ -41,6 +41,8 @@ void lcd_light_off(void);
 void lcd_write_int(uint16_t i);
 void lcd_write_str(const char *str);
 void lcd_write_char(char ch);
+void lcd_write_time(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t day, uint8_t date, uint8_t month, uint8_t year_since_2000);
+
 
 
 #endif /* SCREEN_H_ */

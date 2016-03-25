@@ -24,7 +24,7 @@
 
 typedef enum
 {
-	SUNDAY,
+	SUNDAY = 1,
 	MONDAY,
 	TUESDAY,
 	WEDNESDAY,
@@ -35,6 +35,6 @@ typedef enum
 
 
 void rtc_set_time(uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000);
-
+void rtc_get_time(uint8_t *data_array_len_7);
 
 #endif /* REAL_TIME_CLOCK_H_ */

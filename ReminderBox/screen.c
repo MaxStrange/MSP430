@@ -148,8 +148,6 @@ void lcd_write_int(uint16_t i)
 
 void lcd_write_str(const char *str)
 {
-	lcd_clear();
-
 	uint8_t len = strings_get_length(str);
 
 	if (len <= 15)
@@ -179,6 +177,111 @@ void lcd_write_str(const char *str)
 		lcd_write_str("string is too long.");//TODO string is too long, scroll
 	}
 }
+
+/*
+ * Seconds: 0 - 59
+ * Minutes: 0 - 59
+ * Hours: 0 - 23
+ * Day: 1 (SUNDAY) - 7 (SATURDAY)
+ * Date: 1 - 31
+ * Month: 1 - 12
+ * Year: 0 - 255
+ */
+void lcd_write_time(uint8_t seconds, uint8_t minutes, uint8_t hours_24, uint8_t day, uint8_t date, uint8_t month, uint8_t year_since_2000)
+{
+	volatile char *day_as_str;
+	switch (day)
+	{
+	case 1:
+		day_as_str = "SUN";
+		break;
+	case 2:
+		day_as_str = "MON";
+		break;
+	case 3:
+		day_as_str = "TUE";
+		break;
+	case 4:
+		day_as_str = "WED";
+		break;
+	case 5:
+		day_as_str = "THU";
+		break;
+	case 6:
+		day_as_str = "FRI";
+		break;
+	case 7:
+		day_as_str = "SAT";
+		break;
+	default:
+		day_as_str = "ERR";
+		break;
+	}
+
+	volatile char *month_as_str;
+	switch (month)
+	{
+	case 1:
+		month_as_str = "JAN";
+		break;
+	case 2:
+		month_as_str = "FEB";
+		break;
+	case 3:
+		month_as_str = "MAR";
+		break;
+	case 4:
+		month_as_str = "APR";
+		break;
+	case 5:
+		month_as_str = "MAY";
+		break;
+	case 6:
+		month_as_str = "JUN";
+		break;
+	case 7:
+		month_as_str = "JUL";
+		break;
+	case 8:
+		month_as_str = "AUG";
+		break;
+	case 9:
+		month_as_str = "SEP";
+		break;
+	case 10:
+		month_as_str = "OCT";
+		break;
+	case 11:
+		month_as_str = "NOV";
+		break;
+	case 12:
+		month_as_str = "DEC";
+		break;
+	default:
+		month_as_str = "ERR";
+	}
+
+
+
+
+	lcd_clear();
+
+	lcd_write_int(hours_24);
+	lcd_write_char(':');
+	lcd_write_int(minutes);
+	lcd_write_char(':');
+	lcd_write_int(seconds);
+	lcd_write_char(' ');
+	lcd_write_str((const char *)day_as_str);
+	lcd_write_char(' ');
+	lcd_write_str((const char *)month_as_str);
+	lcd_goto(0, 1);
+	lcd_write_int(date);
+	lcd_write_char(',');
+	lcd_write_char(' ');
+	lcd_write_int(2000 + year_since_2000);
+}
+
 
 
 /*

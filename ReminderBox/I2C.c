@@ -60,10 +60,19 @@ void i2c_init(void)
 /*
  * Max array size = 24.
  *
- * TODO : Make a queue for the data to be sent from the I2C driver
+ * TODO : Make a queue for the data to be sent from the I2C driver so this is not blocking
+ *
+ *
+ * !!!IMPORTANT!!!
+ * ALL interrupts OTHER THAN the I2C module's interrupts need to be disabled during a read and a write, otherwise
+ * things become non-deterministic. If you ever add more interrupts, be sure to disable them here!
  */
 void i2c_write_byte_to_device(uint8_t address, uint8_t start_register_address, uint8_t *byte_array, uint8_t array_length)
 {
+	bool clock_interrupt = TA0CCTL0 & CCIE;
+	if (clock_interrupt)
+		TA0CCTL0 &= ~CCIE;
+
 	UCB0I2CSA = address >> 1;
 
 	write_data_array_length = array_length + 1;
@@ -89,6 +98,10 @@ void i2c_write_byte_to_device(uint8_t address, uint8_t start_register_address, u
 
     //clear the tx interrupt flag so it doesn't fire again
     IFG2 &= ~UCB0TXIFG;
+
+
+    if (clock_interrupt)
+    	TA0CCTL0 |= CCIE;
 }
 
 /*
@@ -96,9 +109,20 @@ void i2c_write_byte_to_device(uint8_t address, uint8_t start_register_address, u
  *
  * Writes the given start address to the given device, then fills in the passed-in array with
  * whatever data comes back over the bus from the device.
+ *
+ *
+ * !!!IMPORTANT!!!
+ * ALL interrupts OTHER THAN the I2C module's interrupts need to be disabled during a read and a write, otherwise
+ * things become non-deterministic. If you ever add more interrupts, be sure to disable them here!
  */
 void i2c_read_bytes_from_device(uint8_t address, uint8_t start_register_address, uint8_t *byte_array, uint8_t array_length)
 {
+	bool clock_interrupt = TA0CCTL0 & CCIE;
+	if (clock_interrupt)
+		TA0CCTL0 &= ~CCIE;
+
+
+
 	UCB0I2CSA = address >> 1;
 
 	read_data_array_length = array_length;
@@ -133,6 +157,10 @@ void i2c_read_bytes_from_device(uint8_t address, uint8_t start_register_address,
 	while (read_data_array_in_use)
 		;
 
+
+	if (clock_interrupt)
+		TA0CCTL0 |= CCIE;
+
 	uint8_t j = 0;
 	for (j = 0; j < array_length; j++)
 	{
@@ -160,8 +188,6 @@ __interrupt void tx_rx_isr(void)
 		UCB0TXBUF = write_data_array[write_data_index];
 		if (write_data_index >= write_data_array_length)
 		{
-			write_data_index = 0;
-
 			if (emit_stop_condition)
 				UCB0CTL1 |= UCTXSTP;
 
@@ -178,8 +204,6 @@ __interrupt void tx_rx_isr(void)
 		read_data_array[read_data_index] = UCB0RXBUF;
 		if (read_data_index >= read_data_array_length)
 		{
-			read_data_index = 0;
-
 			UCB0CTL1 |= UCTXNACK;
 			UCB0CTL1 |= UCTXSTP;
 			read_data_array_in_use = false;
