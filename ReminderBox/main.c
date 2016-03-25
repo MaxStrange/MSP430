@@ -27,28 +27,32 @@ int main(void)
     lcd_light_on();
     lcd_clear();
 
-    i2c_init();
-
-    rtc_set_time(52, 11, FRIDAY, 25, 3, 16);
+    rtc_set_time(43, 13, FRIDAY, 25, 3, 16);
 //	uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000
 
     lcd_clear();
     lcd_write_str("Waiting...");
 
+	uint32_t seconds_since_turn_on = 0;
     uint32_t seconds_last = 0;
+
+
+    rtc_set_alarm1(0, 43, 13, 25);
+
+
+
     while (1)
     {
-    	static uint32_t seconds_since_turn_on = 0;
     	seconds_since_turn_on = clock_get_seconds();
-
 
     	if (seconds_since_turn_on != seconds_last)
     	{
     		static uint8_t time_array[7];
 
     		rtc_get_time(time_array);
-
     		lcd_write_time(time_array[0], time_array[1], time_array[2], time_array[3], time_array[4], time_array[5], time_array[6]);
+    		lcd_goto(9, 1);
+    		lcd_write_int(seconds_since_turn_on);
     	}
 
     	seconds_last = seconds_since_turn_on;

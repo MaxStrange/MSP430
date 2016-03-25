@@ -6,40 +6,26 @@
 
 #include "real_time_clock.h"
 
+static bool alarm1_set = false;
+static bool alarm2_set = false;
+
+static uint8_t itobcd(uint8_t val);
+static uint8_t hours_to_bcd(uint8_t hours);
+static void set_control_bit(uint8_t to_set);
+
 
 void rtc_set_time(uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000)
 {
-	//TEST DATA: 45, 14, TUESDAY, 23, 2, 16
+	static uint8_t data_array[15];/////////[7];
+	data_array[0] = (uint8_t)0;//seconds
+	data_array[1] = itobcd(minutes);
+	data_array[2] = hours_to_bcd(hours_24);
+	data_array[3] = (uint8_t)day;
+	data_array[4] = itobcd(date);
+	data_array[5] = itobcd(month);
+	data_array[6] = itobcd(year_since_2000);
 
-	uint8_t minute_10s = minutes / 10;
-	uint8_t minute_1s = minutes - (minute_10s * 10);
-
-	uint8_t hours_20s = (hours_24 > 19) ? 1 : 0;
-	uint8_t hours_10s = 0;
-	if ((hours_20s == 0) && (hours_24 > 9))
-		hours_10s = 1;
-	uint8_t hours_1s = hours_24 - ((hours_24 / 10) * 10);
-
-	uint8_t date_10s = date / 10;
-	uint8_t date_1s = date - (date_10s * 10);
-
-	uint8_t month_10s = month / 10;
-	uint8_t month_1s = month - (month_10s * 10);
-
-	uint8_t year_10s = year_since_2000 / 10;
-	uint8_t year_1s = year_since_2000 - (year_10s * 10);
-
-
-	static uint8_t data_array[7];
-	data_array[0] = (uint8_t)0;//seconds												//0x00
-	data_array[1] = (minute_10s << 4) | (minute_1s);//minutes;							//0x52
-	data_array[2] = (hours_20s << 5) | (hours_10s << 4) | (hours_1s);//hours_24;		//0x11
-	data_array[3] = (uint8_t)day;														//0x06
-	data_array[4] = (date_10s << 4) | (date_1s);//date;									//0x25
-	data_array[5] = (month_10s << 4) | (month_1s);//month;								//0x03
-	data_array[6] = (year_10s << 4) | (year_1s);//year_since_2000;						//0x16
-
-	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_TIME_SECONDS, data_array, 7);
+	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_TIME_SECONDS, data_array, 15);//////////7);
 }
 
 /*
@@ -89,4 +75,91 @@ void rtc_get_time(uint8_t *data_array_len_7)
 			data_array_len_7[i] = (((time & 0xF0) >> 4) * 10) + (time & 0x0F);
 		}
 	}
+}
+
+void rtc_set_alarm1(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t date)
+{
+	static uint8_t alarm_time[4];
+	alarm_time[0] = itobcd(seconds);
+	alarm_time[1] = itobcd(minutes);
+	alarm_time[2] = hours_to_bcd(hours);
+	alarm_time[3] = itobcd(date);
+
+	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_ALARM_SECONDS, alarm_time, 4);
+	set_control_bit(CONTROL_BITS_ALARM1);
+
+
+
+	alarm1_set = true;
+}
+
+void rtc_set_alarm2(uint8_t minutes, uint8_t hours, uint8_t date)
+{
+	static uint8_t alarm_time[3];
+	alarm_time[0] = itobcd(minutes);
+	alarm_time[1] = hours_to_bcd(hours);
+	alarm_time[2] = itobcd(date);
+
+	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_ALARM2_MINUTES, alarm_time, 3);
+	set_control_bit(CONTROL_BITS_ALARM2);
+
+	alarm2_set = true;
+}
+
+inline bool rtc_is_alarm1_set()
+{
+	return alarm1_set;
+}
+
+inline bool rtc_is_alarm2_set()
+{
+	return alarm2_set;
+}
+
+/*
+ * Convert an integer to binary coded decimal. e.g: 34 -> 0x34
+ */
+static uint8_t itobcd(uint8_t val)
+{
+	uint8_t tens = val / 10;
+	uint8_t ones = val - (tens * 10);
+
+	return ((tens << 4) | ones);
+}
+
+static uint8_t hours_to_bcd(uint8_t hours)
+{
+	uint8_t hours_20s = (hours > 19) ? 1 : 0;
+	uint8_t hours_10s = 0;
+	if ((hours_20s == 0) && (hours > 9))
+		hours_10s = 1;
+	uint8_t hours_1s = hours - ((hours / 10) * 10);
+
+	return ((hours_20s << 5) | (hours_10s << 4) | (hours_1s));
+}
+
+/*
+ * Sets the given bit in the control byte of the RTC.
+ */
+static void set_control_bit(uint8_t to_set)
+{
+	static uint8_t old_control_byte[1];
+	i2c_read_bytes_from_device(MODULE_ADDRESS, ADDR_CONTROL, old_control_byte, 1);
+	static uint8_t new_control_byte[1];
+	new_control_byte[0] = (old_control_byte[0] | (1 << to_set));
+
+	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_CONTROL, new_control_byte, 1);
+}
+
+/*
+ * Clears the given bit in the control byte of the RTC.
+ */
+static void clear_control_bit(uint8_t to_clear)
+{
+	static uint8_t old_control_byte[1];
+	i2c_read_bytes_from_device(MODULE_ADDRESS, ADDR_CONTROL, old_control_byte, 1);
+	static uint8_t new_control_byte[1];
+	new_control_byte[0] = (old_control_byte[0] & ~(1 << to_set));
+
+	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_CONTROL, new_control_byte, 1);
 }
