@@ -66,12 +66,13 @@ void i2c_write_byte_to_device(uint8_t address, uint8_t start_register_address, u
 {
 	UCB0I2CSA = address >> 1;
 
-	write_data_array_length = array_length;
+	write_data_array_length = array_length + 1;
 	uint8_t i = 0;
 	write_data_array[0] = start_register_address;
-	for (i = 1; i < array_length; i++)
+
+	for (i = 1; i <= array_length; i++)
 	{
-		write_data_array[i] = byte_array[i];
+		write_data_array[i] = byte_array[i - 1];
 	}
 
 
@@ -108,7 +109,7 @@ void i2c_read_bytes_from_device(uint8_t address, uint8_t start_register_address,
 	emit_stop_condition = false;
 	static uint8_t start_register_array[1];
 	start_register_array[0] = start_register_address;
-	i2c_write_byte_to_device(address, start_register_address, start_register_array, 1);
+	i2c_write_byte_to_device(address, start_register_address, start_register_array, 0);
 	emit_stop_condition = true;
 
 
