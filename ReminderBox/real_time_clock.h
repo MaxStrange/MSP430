@@ -45,6 +45,7 @@ typedef enum
 } e_day_of_week_t;
 
 
+void rtc_init(void);
 void rtc_set_time(uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000);
 void rtc_get_time(uint8_t *data_array_len_7);
 void rtc_set_alarm1(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t date);

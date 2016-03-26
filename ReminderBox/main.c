@@ -11,6 +11,7 @@ int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 
+
     /*
      * Initialize clock module and interrupts (otherwise, clock won't work)
      */
@@ -27,7 +28,8 @@ int main(void)
     lcd_light_on();
     lcd_clear();
 
-    rtc_set_time(43, 13, FRIDAY, 25, 3, 16);
+//    rtc_init();
+//    rtc_set_time(31, 17, FRIDAY, 25, 3, 16);
 //	uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000
 
     lcd_clear();
@@ -37,7 +39,7 @@ int main(void)
     uint32_t seconds_last = 0;
 
 
-    rtc_set_alarm1(0, 43, 13, 25);
+//    rtc_set_alarm1(0, 43, 13, 25);
 
 
 
@@ -45,7 +47,7 @@ int main(void)
     {
     	seconds_since_turn_on = clock_get_seconds();
 
-    	if (seconds_since_turn_on != seconds_last)
+    	if (seconds_last != seconds_since_turn_on)
     	{
     		static uint8_t time_array[7];
 

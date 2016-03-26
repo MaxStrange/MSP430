@@ -12,7 +12,6 @@ static volatile uint8_t write_data_array[25];
 static volatile uint8_t write_data_index = 0;
 static volatile uint8_t write_data_array_length = 0;
 static volatile bool write_data_array_in_use = false;
-static volatile bool emit_stop_condition = true;
 
 static volatile uint8_t read_data_array[25];
 static volatile uint8_t read_data_index = 0;
@@ -136,11 +135,9 @@ void i2c_read_bytes_from_device(uint8_t address, uint8_t start_register_address,
 	/*
 	 * Set up where to start reading from
 	 */
-	emit_stop_condition = false;
 	static uint8_t start_register_array[1];
 	start_register_array[0] = start_register_address;
 	i2c_write_byte_to_device(address, start_register_address, start_register_array, 0);
-	emit_stop_condition = true;
 
 
 	/*
@@ -191,7 +188,6 @@ static void reset(void)
 	}
 	write_data_array_length = 0;
 	write_data_array_in_use = false;
-	emit_stop_condition = true;
 
 	read_data_index = 0;
 	read_data_array_length = 0;
@@ -223,8 +219,7 @@ __interrupt void tx_rx_isr(void)
 		UCB0TXBUF = write_data_array[write_data_index];
 		if (write_data_index >= write_data_array_length)
 		{
-			if (emit_stop_condition)
-				UCB0CTL1 |= UCTXSTP;
+			UCB0CTL1 |= UCTXSTP;
 
 			write_data_array_in_use = false;
 		}

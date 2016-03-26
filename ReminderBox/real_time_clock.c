@@ -12,11 +12,25 @@ static bool alarm2_set = false;
 static uint8_t itobcd(uint8_t val);
 static uint8_t hours_to_bcd(uint8_t hours);
 static void set_control_bit(uint8_t to_set);
+static void clear_control_bit(uint8_t to_clear);
 
+
+void rtc_init(void)
+{
+	set_control_bit(CONTROL_BITS_RS2);
+	set_control_bit(CONTROL_BITS_RS1);
+	set_control_bit(CONTROL_BITS_INTCN);
+
+	clear_control_bit(CONTROL_BITS_ALARM1);
+	clear_control_bit(CONTROL_BITS_ALARM2);
+	clear_control_bit(CONTROL_BITS_BBSQW);
+	clear_control_bit(CONTROL_BITS_CONV);
+	clear_control_bit(CONTROL_BITS_EOSC);
+}
 
 void rtc_set_time(uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000)
 {
-	static uint8_t data_array[15];/////////[7];
+	static uint8_t data_array[7];
 	data_array[0] = (uint8_t)0;//seconds
 	data_array[1] = itobcd(minutes);
 	data_array[2] = hours_to_bcd(hours_24);
@@ -25,7 +39,8 @@ void rtc_set_time(uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_
 	data_array[5] = itobcd(month);
 	data_array[6] = itobcd(year_since_2000);
 
-	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_TIME_SECONDS, data_array, 15);//////////7);
+	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_TIME_SECONDS, data_array, 7);
+	rtc_init();
 }
 
 /*
@@ -86,9 +101,8 @@ void rtc_set_alarm1(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t dat
 	alarm_time[3] = itobcd(date);
 
 	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_ALARM_SECONDS, alarm_time, 4);
+	rtc_init();
 	set_control_bit(CONTROL_BITS_ALARM1);
-
-
 
 	alarm1_set = true;
 }
@@ -101,6 +115,7 @@ void rtc_set_alarm2(uint8_t minutes, uint8_t hours, uint8_t date)
 	alarm_time[2] = itobcd(date);
 
 	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_ALARM2_MINUTES, alarm_time, 3);
+	rtc_init();
 	set_control_bit(CONTROL_BITS_ALARM2);
 
 	alarm2_set = true;
@@ -159,7 +174,7 @@ static void clear_control_bit(uint8_t to_clear)
 	static uint8_t old_control_byte[1];
 	i2c_read_bytes_from_device(MODULE_ADDRESS, ADDR_CONTROL, old_control_byte, 1);
 	static uint8_t new_control_byte[1];
-	new_control_byte[0] = (old_control_byte[0] & ~(1 << to_set));
+	new_control_byte[0] = (old_control_byte[0] & ~(1 << to_clear));
 
 	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_CONTROL, new_control_byte, 1);
 }
