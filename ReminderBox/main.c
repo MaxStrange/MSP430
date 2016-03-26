@@ -53,8 +53,6 @@ int main(void)
 
     		rtc_get_time(time_array);
     		lcd_write_time(time_array[0], time_array[1], time_array[2], time_array[3], time_array[4], time_array[5], time_array[6]);
-    		lcd_goto(9, 1);
-    		lcd_write_int(seconds_since_turn_on);
     	}
 
     	seconds_last = seconds_since_turn_on;

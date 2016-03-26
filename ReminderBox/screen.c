@@ -262,20 +262,24 @@ void lcd_write_time(uint8_t seconds, uint8_t minutes, uint8_t hours_24, uint8_t 
 	}
 
 
+	uint8_t hours_12 = (hours_24 > 12) ? hours_24 - 12 : hours_24;
 
 
 	lcd_clear();
 
-	lcd_write_int(hours_24);
+	lcd_write_int(hours_12);
 	lcd_write_char(':');
+	if (minutes < 10)	lcd_write_char('0');
 	lcd_write_int(minutes);
 	lcd_write_char(':');
+	if (seconds < 10)	lcd_write_char('0');
 	lcd_write_int(seconds);
 	lcd_write_char(' ');
 	lcd_write_str((const char *)day_as_str);
 	lcd_write_char(' ');
 	lcd_write_str((const char *)month_as_str);
 	lcd_goto(0, 1);
+	if (date < 10)	lcd_write_char('0');
 	lcd_write_int(date);
 	lcd_write_char(',');
 	lcd_write_char(' ');
