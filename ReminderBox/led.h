@@ -1,7 +1,8 @@
 #ifndef LED_H_
 #define LED_H_
 
-#define LED_RED		BIT0
+#define LED_MAX		1
+#define LED_MISH	2
 
 void led_init(void);
 void led_blink(void);

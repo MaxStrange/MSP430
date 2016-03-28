@@ -21,6 +21,7 @@
 #define ADDR_ALARM2_HOURS	0x0C
 #define ADDR_ALARM2_DATE	0x0D
 #define ADDR_CONTROL		0x0E
+#define ADDR_STATUS			0x0F
 
 #define CONTROL_BITS_ALARM1	0
 #define CONTROL_BITS_ALARM2 1
@@ -30,6 +31,12 @@
 #define CONTROL_BITS_CONV	5
 #define CONTROL_BITS_BBSQW	6
 #define CONTROL_BITS_EOSC	7
+
+#define STATUS_BITS_A1_FLAG	0
+#define STATUS_BITS_A2_FLAG	1
+#define STATUS_BITS_BUSY	2
+#define STATUS_BITS_EN32KHZ	3
+#define STATUS_BITS_OSF		7
 
 
 
@@ -53,5 +60,7 @@ void rtc_set_alarm2(uint8_t minutes, uint8_t hours, uint8_t date);
 
 bool rtc_is_alarm1_set();
 bool rtc_is_alarm2_set();
+bool rtc_get_fault();
+void rtc_clear_fault();
 
 #endif /* REAL_TIME_CLOCK_H_ */

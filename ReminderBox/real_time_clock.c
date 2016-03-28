@@ -11,21 +11,22 @@ static bool alarm2_set = false;
 
 static uint8_t itobcd(uint8_t val);
 static uint8_t hours_to_bcd(uint8_t hours);
-static void set_control_bit(uint8_t to_set);
-static void clear_control_bit(uint8_t to_clear);
+static void set_bit(uint8_t register_addr, uint8_t to_set);
+static void clear_bit(uint8_t register_addr, uint8_t to_clear);
+static uint8_t read_byte(uint8_t byte_address);
 
 
 void rtc_init(void)
 {
-	set_control_bit(CONTROL_BITS_RS2);
-	set_control_bit(CONTROL_BITS_RS1);
-	set_control_bit(CONTROL_BITS_INTCN);
+	set_bit(ADDR_CONTROL, CONTROL_BITS_RS2);
+	set_bit(ADDR_CONTROL, CONTROL_BITS_RS1);
+	set_bit(ADDR_CONTROL, CONTROL_BITS_INTCN);
 
-	clear_control_bit(CONTROL_BITS_ALARM1);
-	clear_control_bit(CONTROL_BITS_ALARM2);
-	clear_control_bit(CONTROL_BITS_BBSQW);
-	clear_control_bit(CONTROL_BITS_CONV);
-	clear_control_bit(CONTROL_BITS_EOSC);
+	clear_bit(ADDR_CONTROL, CONTROL_BITS_ALARM1);
+	clear_bit(ADDR_CONTROL, CONTROL_BITS_ALARM2);
+	clear_bit(ADDR_CONTROL, CONTROL_BITS_BBSQW);
+	clear_bit(ADDR_CONTROL, CONTROL_BITS_CONV);
+	clear_bit(ADDR_CONTROL, CONTROL_BITS_EOSC);
 }
 
 void rtc_set_time(uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000)
@@ -102,7 +103,7 @@ void rtc_set_alarm1(uint8_t seconds, uint8_t minutes, uint8_t hours, uint8_t dat
 
 	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_ALARM_SECONDS, alarm_time, 4);
 	rtc_init();
-	set_control_bit(CONTROL_BITS_ALARM1);
+	set_bit(ADDR_CONTROL, CONTROL_BITS_ALARM1);
 
 	alarm1_set = true;
 }
@@ -116,7 +117,7 @@ void rtc_set_alarm2(uint8_t minutes, uint8_t hours, uint8_t date)
 
 	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_ALARM2_MINUTES, alarm_time, 3);
 	rtc_init();
-	set_control_bit(CONTROL_BITS_ALARM2);
+	set_bit(ADDR_CONTROL, CONTROL_BITS_ALARM2);
 
 	alarm2_set = true;
 }
@@ -129,6 +130,23 @@ inline bool rtc_is_alarm1_set()
 inline bool rtc_is_alarm2_set()
 {
 	return alarm2_set;
+}
+
+/*
+ * Returns true if a fault has occurred - most likely indicates power failure at
+ * some point, but either way, it means the clock needs to be reset.
+ */
+inline bool rtc_get_fault()
+{
+	return (read_byte(ADDR_STATUS) & STATUS_BITS_OSF);
+}
+
+/*
+ * Clears the oscillator fault bit in the status register.
+ */
+inline void rtc_clear_fault()
+{
+	clear_bit(ADDR_STATUS, STATUS_BITS_OSF);
 }
 
 /*
@@ -154,27 +172,33 @@ static uint8_t hours_to_bcd(uint8_t hours)
 }
 
 /*
- * Sets the given bit in the control byte of the RTC.
+ * Sets the given bit in the given register of the RTC.
  */
-static void set_control_bit(uint8_t to_set)
+static void set_bit(uint8_t register_addr, uint8_t to_set)
 {
-	static uint8_t old_control_byte[1];
-	i2c_read_bytes_from_device(MODULE_ADDRESS, ADDR_CONTROL, old_control_byte, 1);
-	static uint8_t new_control_byte[1];
-	new_control_byte[0] = (old_control_byte[0] | (1 << to_set));
+	uint8_t old_byte = read_byte(register_addr);
+	static uint8_t new_byte[1];
+	new_byte[0] = (old_byte | (1 << to_set));
 
-	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_CONTROL, new_control_byte, 1);
+	i2c_write_byte_to_device(MODULE_ADDRESS, register_addr, new_byte, 1);
 }
 
 /*
- * Clears the given bit in the control byte of the RTC.
+ * Clears the given bit in the given register of the RTC.
  */
-static void clear_control_bit(uint8_t to_clear)
+static void clear_bit(uint8_t register_addr, uint8_t to_clear)
 {
-	static uint8_t old_control_byte[1];
-	i2c_read_bytes_from_device(MODULE_ADDRESS, ADDR_CONTROL, old_control_byte, 1);
-	static uint8_t new_control_byte[1];
-	new_control_byte[0] = (old_control_byte[0] & ~(1 << to_clear));
+	uint8_t old_byte = read_byte(register_addr);
+	static uint8_t new_byte[1];
+	new_byte[0] = (old_byte & ~(1 << to_clear));
 
-	i2c_write_byte_to_device(MODULE_ADDRESS, ADDR_CONTROL, new_control_byte, 1);
+	i2c_write_byte_to_device(MODULE_ADDRESS, register_addr, new_byte, 1);
+}
+
+static uint8_t read_byte(uint8_t byte_address)
+{
+	static uint8_t byte[1];
+	i2c_read_bytes_from_device(MODULE_ADDRESS, byte_address, byte, 1);
+
+	return byte[0];
 }
