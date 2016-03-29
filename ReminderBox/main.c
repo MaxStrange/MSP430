@@ -1,4 +1,6 @@
 #include <msp430.h> 
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "screen.h"
 #include "real_time_clock.h"
@@ -7,6 +9,9 @@
 #include "led.h"
 #include "memory.h"
 
+
+static void debug_memory_test(void);
+static void debug_show_message(char *str, uint16_t *nums, uint16_t number_of_nums, uint16_t duration);
 
 
 int main(void)
@@ -47,19 +52,6 @@ int main(void)
     	lcd_write_str("Waiting...");
     }
 
-
-    /*
-     * Initialize the clock - shouldn't have to do this more than once
-     */
-//    rtc_init();
-//    rtc_set_time(31, 17, FRIDAY, 25, 3, 16);
-//	  uint8_t minutes, uint8_t hours_24, e_day_of_week_t day, uint8_t date, uint8_t month, uint8_t year_since_2000
-
-
-
-
-
-
 	uint32_t seconds_since_turn_on = 0;
     uint32_t seconds_last = 0;
     /*
@@ -67,80 +59,20 @@ int main(void)
      */
     memory_init();
 
-    uint16_t read_array[2];
-    bool read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
 
-	lcd_clear();
-	lcd_write_str("Read: "); lcd_write_int(read_array[0]); lcd_write_char(' '); lcd_write_int(read_array[1]);
-	while (seconds_since_turn_on < 3)
-	{
-		seconds_since_turn_on = clock_get_seconds();
-	}
+    /*
+     * Memory test for debug purposes
+     */
+    debug_memory_test();
 
 
-    memory_debug_erase_section();
-
-
-    read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
-	lcd_clear();
-	lcd_write_str("After erase: "); lcd_goto(0, 1); lcd_write_int(read_array[0]); lcd_write_char(' '); lcd_write_int(read_array[1]);
-	while (seconds_since_turn_on < 6)
-	{
-		seconds_since_turn_on = clock_get_seconds();
-	}
-
-    lcd_clear();
-    lcd_write_str("Writing: "); lcd_write_int(123); lcd_write_char(' '); lcd_write_int(322);
-    while (seconds_since_turn_on < 8)
-    {
-    	seconds_since_turn_on = clock_get_seconds();
-    }
-
-    uint16_t write_array[2];
-    write_array[0] = 123; write_array[1] = 322;
-    if (memory_write_words(write_array, 2))
-    {
-    	lcd_clear();
-    	lcd_write_str("Write success.");
-
-    	while (seconds_since_turn_on < 11)
-    		seconds_since_turn_on = clock_get_seconds();
-    }
-    else
-    {
-    	lcd_clear();
-    	lcd_write_str("Write failed...");
-
-    	while (1);
-    }
-
-
-
-    read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
-
-    lcd_clear();
-    lcd_write_str("Read: "); lcd_write_int(read_array[0]); lcd_write_char(' '); lcd_write_int(read_array[1]);
-    while (seconds_since_turn_on < 14)
-    {
-    	seconds_since_turn_on = clock_get_seconds();
-    }
-
-    if (!read_worked)
-    {
-    	lcd_clear();
-    	lcd_write_str("Read failed...");
-
-    	while (1);
-    }
-
+    uint8_t time_array[7];
     while (1)
     {
     	seconds_since_turn_on = clock_get_seconds();
 
     	if (seconds_last != seconds_since_turn_on)
     	{
-    		static uint8_t time_array[7];
-
     		rtc_get_time(time_array);
     		lcd_write_time(time_array[0], time_array[1], time_array[2], time_array[3], time_array[4], time_array[5], time_array[6]);
     	}
@@ -171,4 +103,75 @@ int main(void)
     }
 
 	return 0;
+}
+
+
+static void debug_memory_test(void)
+{
+	/*
+	 * Establish arrays for test read and test write.
+	 */
+
+    uint16_t read_array[2];
+    uint16_t write_array[2] = { (uint16_t)123 , (uint16_t)322 };
+
+    /*
+     * Read before memory has been erased.
+     */
+
+    bool read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
+    debug_show_message("Read:", read_array, 2, 3);
+
+    /*
+     * Erase memory segment.
+     */
+
+    memory_debug_erase_section();
+
+    /*
+     * Read after erase.
+     */
+
+    read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
+    debug_show_message("After erase:", read_array, 2, 3);
+
+    /*
+     * Write the data.
+     */
+
+    debug_show_message("Write:", write_array, 2, 3);
+    bool write_worked = memory_write_words(write_array, 2);
+    if (write_worked)
+    	debug_show_message("Write success", write_array, 0, 3);
+    else
+    	debug_show_message("Write failed.", write_array, 0, 3);
+
+    /*
+     * Read the data after the write.
+     */
+
+    read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
+    debug_show_message("Read:", read_array, 2, 3);
+}
+
+static void debug_show_message(char *str, uint16_t *nums, uint16_t number_of_nums, uint16_t duration)
+{
+	uint32_t start = clock_get_seconds();
+
+	lcd_clear();
+	lcd_write_str(str);
+	lcd_goto(0, 1);
+
+	int i;
+	for (i = 0; i < number_of_nums; i++)
+	{
+		lcd_write_int(nums[i]);
+		lcd_write_char(' ');
+	}
+
+	uint32_t seconds = clock_get_seconds();
+	while (seconds <= (start + duration))
+	{
+		seconds = clock_get_seconds();
+	}
 }
