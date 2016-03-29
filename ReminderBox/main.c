@@ -66,26 +66,72 @@ int main(void)
      * Initialize the flash memory module
      */
     memory_init();
-    //memory_debug_erase_section();
-//
-//    lcd_clear();
-//    lcd_write_str("Writing: "); lcd_write_int(123); lcd_write_char(' '); lcd_write_int(322);
-//    while (seconds_since_turn_on < 5)
-//    {
-//    	;
-//    }
-//
-//    static uint16_t write_array[2];
-//    write_array[0] = 123; write_array[1] = 322;
-//    memory_write_words(write_array, 2);
-//
-//
-//    static uint16_t read_array[2];
-//    memory_read_words(MEM_ADDR_FIRST, read_array, 2);
-//
-//    lcd_clear();
-//    lcd_write_str("Read: "); lcd_write_int(read_array[0]); lcd_write_char(' '); lcd_write_int(read_array[1]);
 
+    uint16_t read_array[2];
+    bool read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
+
+	lcd_clear();
+	lcd_write_str("Read: "); lcd_write_int(read_array[0]); lcd_write_char(' '); lcd_write_int(read_array[1]);
+	while (seconds_since_turn_on < 3)
+	{
+		seconds_since_turn_on = clock_get_seconds();
+	}
+
+
+    memory_debug_erase_section();
+
+
+    read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
+	lcd_clear();
+	lcd_write_str("After erase: "); lcd_goto(0, 1); lcd_write_int(read_array[0]); lcd_write_char(' '); lcd_write_int(read_array[1]);
+	while (seconds_since_turn_on < 6)
+	{
+		seconds_since_turn_on = clock_get_seconds();
+	}
+
+    lcd_clear();
+    lcd_write_str("Writing: "); lcd_write_int(123); lcd_write_char(' '); lcd_write_int(322);
+    while (seconds_since_turn_on < 8)
+    {
+    	seconds_since_turn_on = clock_get_seconds();
+    }
+
+    uint16_t write_array[2];
+    write_array[0] = 123; write_array[1] = 322;
+    if (memory_write_words(write_array, 2))
+    {
+    	lcd_clear();
+    	lcd_write_str("Write success.");
+
+    	while (seconds_since_turn_on < 11)
+    		seconds_since_turn_on = clock_get_seconds();
+    }
+    else
+    {
+    	lcd_clear();
+    	lcd_write_str("Write failed...");
+
+    	while (1);
+    }
+
+
+
+    read_worked = memory_read_words(MEM_ADDR_FIRST, read_array, 2);
+
+    lcd_clear();
+    lcd_write_str("Read: "); lcd_write_int(read_array[0]); lcd_write_char(' '); lcd_write_int(read_array[1]);
+    while (seconds_since_turn_on < 14)
+    {
+    	seconds_since_turn_on = clock_get_seconds();
+    }
+
+    if (!read_worked)
+    {
+    	lcd_clear();
+    	lcd_write_str("Read failed...");
+
+    	while (1);
+    }
 
     while (1)
     {

@@ -6,8 +6,8 @@
 #include <stdbool.h>
 
 
-#define MEM_ADDR_FIRST	0xFFBF
-#define MEM_ADDR_LAST	0xC3BF
+#define MEM_ADDR_FIRST	0x103E//0xFFBF
+#define MEM_ADDR_LAST	0x1000//0xC3BF
 
 
 

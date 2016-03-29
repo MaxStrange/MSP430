@@ -60,6 +60,8 @@ bool memory_read_words(uint16_t address, uint16_t *words, uint8_t word_array_len
 	}
 	else
 	{
+		__disable_interrupt();
+
 		uint16_t *word_pointer = (uint16_t *) address;
 
 		unsigned int i = 0;
@@ -71,58 +73,95 @@ bool memory_read_words(uint16_t address, uint16_t *words, uint8_t word_array_len
 				word_pointer = (uint16_t *) MEM_ADDR_FIRST;
 		}
 
-		bool worked = FCTL3 & FAIL;
+		bool failed = FCTL3 & FAIL;
 		uint16_t fctl3 = FCTL3;
 		FCTL3 = FWKEY | (~(FAIL | LOCKA) & fctl3 & 0x00FF);
-		return worked;
+
+		__enable_interrupt();
+
+		return !failed;
 	}
 }
 
 bool memory_write_words(uint16_t *words, uint8_t word_array_length)
 {
-	FCTL3 = FWKEY | LOCK;
+	__disable_interrupt();
 
-	unsigned int i = 0;
+	FCTL3 = FWKEY;                       // Clear Lock bit
+	FCTL1 = FWKEY | WRT;                 // Set WRT bit for write operation
+
+	int i = 0;
 	for (i = 0; i < word_array_length; i++)
 	{
-		*cur_word = words[i];
-		cur_word++;
-
-		bool word_is_in_new_section = (((uint16_t)cur_word - MEM_ADDR_LAST) % 512 == 0);
-		if (cur_word <= (uint16_t *) MEM_ADDR_LAST)
-		{
-			erase_from_now_on = true;
-			erase_section();
-			cur_word = (uint16_t *) MEM_ADDR_FIRST;
-		}
-		else if (word_is_in_new_section && erase_from_now_on)
-		{
-			erase_section();
-		}
+		uint16_t to_write = words[i];
+		*cur_word = to_write;
+		cur_word--;
 	}
 
+	FCTL1 = FWKEY;                        // Clear WRT bit
 	bool failed = FCTL3 & FAIL;
-	uint16_t fctl3 = FCTL3;
-	fctl3 &= 0x00FF & ~LOCKA;//clear the fwkey value (which is not FWKEY)
-	fctl3 |= FWKEY;//set the fwkey
-	fctl3 &= ~(FAIL | LOCK | LOCKA);//clear the lock and fail bits but keep from writing to LOCKA (which changes its state when written to)
-	FCTL3 = fctl3;//write to the register
+	FCTL3 = FWKEY | LOCK;                 // Set LOCK bit
 
-	return failed;
+	__enable_interrupt();
+
+	return !failed;
+
+
+
+
+
+
+
+//	FCTL3 = FWKEY | LOCK;
+//
+//	unsigned int i = 0;
+//	for (i = 0; i < word_array_length; i++)
+//	{
+//		*cur_word = words[i];
+//		cur_word--;
+//
+//		bool word_is_in_new_section = (((uint16_t)cur_word - MEM_ADDR_LAST) % 512 == 0);
+//		if (cur_word <= (uint16_t *) MEM_ADDR_LAST)
+//		{
+//			erase_from_now_on = true;
+//			erase_section();
+//			cur_word = (uint16_t *) MEM_ADDR_FIRST;
+//		}
+//		else if (word_is_in_new_section && erase_from_now_on)
+//		{
+//			erase_section();
+//		}
+//	}
+//
+//	bool failed = FCTL3 & FAIL;
+//	uint16_t fctl3 = FCTL3;
+//	fctl3 &= (0x00FF & ~LOCKA);//clear the fwkey value (which is not FWKEY)
+//	fctl3 |= FWKEY;//set the fwkey
+//	fctl3 &= ~(FAIL | LOCK | LOCKA);//clear the lock and fail bits but keep from writing to LOCKA (which changes its state when written to)
+//	FCTL3 = fctl3;//write to the register
+
+//	__enable_interrupt();
+
+//	return failed;
 }
 
 
 static bool erase_section(void)
 {
-	uint16_t fctl3 = FCTL3;
+	__disable_interrupt();
 
 	FCTL1 = FWKEY | ERASE;
-	FCTL3 = FWKEY | (~(LOCK | LOCKA) & fctl3 & 0x00FF);
+	uint16_t fctl3 = FCTL3;
+	FCTL3 = FWKEY | (~(LOCK | LOCKA) & fctl3 & 0x00FF);//Clear the LOCK bit, but don't write to the LOCKA bit (writing a one to it toggles it)
+
 	*cur_word = 0;
 
 	bool failed = FCTL3 & FAIL;
-	FCTL3 = FWKEY | LOCK | (~FAIL & fctl3 & 0x00FF);
-	return failed;
+	FCTL3 = FWKEY | LOCK | (~(FAIL | LOCKA) & fctl3 & 0x00FF);//Reset the LOCK bit, clear the FAIL bit, and don't toggle the LOCKA bit
+
+	__enable_interrupt();
+
+	return !failed;
 }
 
 
