@@ -108,7 +108,7 @@ bool memory_write_words(uint16_t *words, uint8_t word_array_length)
 
 
 
-
+//TODO Before this module can be used for realsies, you have to figure out the memory structure of the flash in this device, so we can wrap around and erase when necessary.
 
 
 

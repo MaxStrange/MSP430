@@ -1,6 +1,7 @@
 #include <msp430.h> 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "screen.h"
 #include "real_time_clock.h"
@@ -8,6 +9,7 @@
 #include "I2C.h"
 #include "led.h"
 #include "memory.h"
+#include "user_interface.h"
 
 
 static void debug_memory_test(void);
@@ -19,41 +21,38 @@ int main(void)
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 
     /*
-     * Initialize clock module and interrupts (otherwise, clock won't work)
+     * Initialize clock module and interrupts (otherwise, clock won't work). Most other modules depend on this one, so be
+     * sure to initialize it first.
      */
 	clock_init();
 	clock_start_timer();
 	__enable_interrupt();		//enable global interrupts
 
 	/*
-	 * Initialize LCD module (depends on clock module)
+	 * Initialize user interface
 	 */
-    lcd_pin_init();
-    lcd_start();
+	user_interface_init();
 
-    lcd_light_on();
-    lcd_clear();
 
     /*
-     * Initialize LEDs
+     * The RTC has already been initialized, so simply check if its battery has died. If so, let the user know it needs to
+     * be replaced and the time needs to be reset.
+     *
+     * While debugging, even though the RTC doesn't lose power when you turn off the MSP430 (since it has its own battery),
+     * it will insist that it has had a fault and therefore the battery should be replaced. This is not so. Ignore it.
      */
-    led_init();
-    led_on();
+//    if (rtc_get_fault())
+//    {
+//    	debug_show_message("Replace RTC battery.", NULL, 0, 3);
+//    	rtc_clear_fault();
+//    	debug_show_message("Still bad", NULL, 0, 3);
+//    }
+//    else
+//    {
+//    	debug_show_message("Initializing system.", NULL, 0, 3);
+//    }
 
-    if (rtc_get_fault())
-    {
-    	lcd_clear();
-    	lcd_write_str("Replace clock   battery.");
-    	rtc_clear_fault();
-    }
-    else
-    {
-    	lcd_clear();
-    	lcd_write_str("Waiting...");
-    }
 
-	uint32_t seconds_since_turn_on = 0;
-    uint32_t seconds_last = 0;
     /*
      * Initialize the flash memory module
      */
@@ -63,25 +62,14 @@ int main(void)
     /*
      * Memory test for debug purposes
      */
-    debug_memory_test();
+//    debug_memory_test();
 
 
-    uint8_t time_array[7];
     while (1)
     {
-    	seconds_since_turn_on = clock_get_seconds();
-
-    	if (seconds_last != seconds_since_turn_on)
-    	{
-    		rtc_get_time(time_array);
-    		lcd_write_time(time_array[0], time_array[1], time_array[2], time_array[3], time_array[4], time_array[5], time_array[6]);
-    	}
-
-    	seconds_last = seconds_since_turn_on;
-
-
-
-
+    	//LPM;
+    	//if (wake up due to button press) :
+    	user_interface_display();
 
     	/*
     	 * Overall architecture:
@@ -89,12 +77,6 @@ int main(void)
     	 * LPM
     	 * if (wake due to button press)
     	 * 		display user interface
-    	 * 				-> user has the following options:
-    	 * 					->Pay bill (after which, the LED(s) should go off and the memory should be checked to make
-    	 * 						sure there isn't another one coming and if not, set up the next alarm.)
-    	 * 					->Check coming due dates
-    	 * 					->Enter new bill (after which, the date should be loaded into memory, then the alarms need to be updated
-    	 * 						to make sure they are still the next bills.)
     	 * else
     	 * 		//woke up due to alarm from RTC module
     	 * 		check memory to find who's bill is coming due
