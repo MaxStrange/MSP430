@@ -22,7 +22,7 @@ volatile menu_system_t top_menu =
 };
 
 
-inline void scroll_top_menu_forward(volatile menu_choice_t *current_item)
+inline void scroll_top_menu_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 	menu_choice_t m = *current_item;
 
@@ -46,7 +46,7 @@ inline void scroll_top_menu_forward(volatile menu_choice_t *current_item)
 	}
 }
 
-inline void scroll_top_menu_backward(volatile menu_choice_t *current_item)
+inline void scroll_top_menu_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 	menu_choice_t m = *current_item;
 

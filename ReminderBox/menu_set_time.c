@@ -7,14 +7,14 @@
 #include "menu_set_time.h"
 
 
-static void scroll_set_time_forward(volatile menu_choice_t *current_item);
-static void scroll_set_time_backward(volatile menu_choice_t *current_item);
+static void scroll_set_time_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_set_time_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
 static void confirm_set_time(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 static void reject_set_time(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 
 
-static void (*scroll_top_forward_fp)(volatile menu_choice_t *);
-static void (*scroll_top_backward_fp)(volatile menu_choice_t *);
+static void (*scroll_top_forward_fp)(volatile menu_choice_t *, volatile menu_choice_t *);
+static void (*scroll_top_backward_fp)(volatile menu_choice_t *, volatile menu_choice_t *);
 static void (*confirm_top_fp)(volatile menu_system_t *, volatile menu_choice_t *);
 static void (*reject_top_fp)(volatile menu_system_t *, volatile menu_choice_t *);
 
@@ -30,7 +30,7 @@ volatile menu_system_t set_time_menu =
 
 
 
-void menu_set_time_init(void (*scroll_forward_fp)(volatile menu_choice_t*), void (*scroll_backward_fp)(volatile menu_choice_t *),
+void menu_set_time_init(void (*scroll_forward_fp)(volatile menu_choice_t*, volatile menu_choice_t *), void (*scroll_backward_fp)(volatile menu_choice_t *, volatile menu_choice_t *),
 		void (*confirm_fp)(volatile menu_system_t *, volatile menu_choice_t *), void (*reject_fp)(volatile menu_system_t *, volatile menu_choice_t *))
 {
 	scroll_top_forward_fp = scroll_forward_fp;
@@ -40,11 +40,11 @@ void menu_set_time_init(void (*scroll_forward_fp)(volatile menu_choice_t*), void
 }
 
 
-inline static void scroll_set_time_forward(volatile menu_choice_t *current_item)
+inline static void scroll_set_time_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 
-inline static void scroll_set_time_backward(volatile menu_choice_t *current_item)
+inline static void scroll_set_time_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 

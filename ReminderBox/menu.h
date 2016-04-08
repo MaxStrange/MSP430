@@ -7,11 +7,12 @@ typedef int menu_choice_t;
 typedef struct menu_system_t
 {
 	menu_choice_t current_choice;
+	menu_choice_t current_sub_menu_choice;
 
 	void (*confirm)(volatile struct menu_system_t *menu, volatile menu_choice_t *menu_item);
 	void (*reject)(volatile struct menu_system_t *menu, volatile menu_choice_t *menu_item);
-	void (*scroll_menu_forward)(volatile menu_choice_t *menu_item);
-	void (*scroll_menu_backward)(volatile menu_choice_t *menu_item);
+	void (*scroll_menu_forward)(volatile menu_choice_t *menu_item, volatile menu_choice_t *current_sub_choice);
+	void (*scroll_menu_backward)(volatile menu_choice_t *menu_item, volatile menu_choice_t *current_sub_choice);
 } menu_system_t;
 
 #define TOP_MENU_SIZE 5
@@ -48,5 +49,46 @@ typedef enum
 {
 	CHOICE_SET_TIME = 9
 } choice_set_time_e;
+
+
+typedef enum
+{
+//DAY OF THE MONTH - 1 - 31 reserved
+//PEOPLE
+	SUB_CHOICE_MAX = 32,
+	SUB_CHOICE_MISH = 33,
+//COMPANIES
+	CHASE_FREEDOM = 34,
+	CHASE_SAPPHIRE = 35,
+	CAPITAL_ONE = 36,
+	DISCOVER = 37,
+	AMEX = 38,
+	CITI = 39,
+	ELECTRICITY = 40,
+	WATER = 41,
+	COMCAST = 42,
+	MEDICAL = 43,
+	MISC = 44,
+//Months
+	JANUARY = 45,
+	FEBRUARY = 46,
+	MARCH = 47,
+	APRIL = 48,
+	MAY = 49,
+	JUNE = 50,
+	JULY = 51,
+	AUGUST = 52,
+	SEPTEMBER = 53,
+	OCTOBER = 54,
+	NOVEMBER = 55,
+	DECEMBER = 56,
+//Command
+	CONFIRM_ENTER_BILL = 57
+} sub_choice_enter_bill_e;
+
+typedef enum
+{
+	WAIT_E = 255
+} wait_e;
 
 #endif /* MENU_H_ */

@@ -7,15 +7,15 @@
 #include "menu_pay_bill.h"
 
 
-static void scroll_pay_menu_forward(volatile menu_choice_t *current_item);
-static void scroll_pay_menu_backward(volatile menu_choice_t *current_item);
+static void scroll_pay_menu_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_pay_menu_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
 static void confirm_pay_bill(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 static void reject_confirmation_pay_bill(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 
 
 
-static void (*scroll_top_forward_fp)(volatile menu_choice_t *);
-static void (*scroll_top_backward_fp)(volatile menu_choice_t *);
+static void (*scroll_top_forward_fp)(volatile menu_choice_t *, volatile menu_choice_t *);
+static void (*scroll_top_backward_fp)(volatile menu_choice_t *, volatile menu_choice_t *);
 static void (*confirm_top_fp)(volatile menu_system_t *, volatile menu_choice_t *);
 static void (*reject_top_fp)(volatile menu_system_t *, volatile menu_choice_t *);
 
@@ -32,7 +32,7 @@ volatile menu_system_t pay_bill_menu =
 
 
 
-void menu_pay_bill_init(void (*scroll_forward_fp)(volatile menu_choice_t*), void (*scroll_backward_fp)(volatile menu_choice_t *),
+void menu_pay_bill_init(void (*scroll_forward_fp)(volatile menu_choice_t*, volatile menu_choice_t *), void (*scroll_backward_fp)(volatile menu_choice_t *, volatile menu_choice_t *),
 		void (*confirm_fp)(volatile menu_system_t *, volatile menu_choice_t *), void (*reject_fp)(volatile menu_system_t *, volatile menu_choice_t *))
 {
 	scroll_top_forward_fp = scroll_forward_fp;
@@ -42,11 +42,11 @@ void menu_pay_bill_init(void (*scroll_forward_fp)(volatile menu_choice_t*), void
 }
 
 
-inline static void scroll_pay_menu_forward(volatile menu_choice_t *current_item)
+inline static void scroll_pay_menu_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 
-inline static void scroll_pay_menu_backward(volatile menu_choice_t *current_item)
+inline static void scroll_pay_menu_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 

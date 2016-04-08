@@ -16,6 +16,7 @@ volatile menu_system_t *current_menu;
 
 #define BUF_LEN 25
 static char last_displayed_str[BUF_LEN];
+static uint16_t last_displayed_num = 65535;
 volatile static bool *sleep;
 
 
@@ -27,6 +28,8 @@ volatile static bool *sleep;
 static void update_last_string(const char *str);
 static void display_menu_item(const char *str);
 static void display_time(void);
+static void display_enter_bill_sub_menu(void);
+static void display_number(const char *str, uint16_t i);
 
 
 void ui_view_init(volatile bool *sleep_ptr, volatile menu_system_t *menu_ptr)
@@ -80,7 +83,7 @@ void ui_view_display(void)
     		display_menu_item("due items will show up here");
     		break;
     	case CHOICE_ENTER_BILL:
-    		display_menu_item("will ask for bill info here");
+    		display_enter_bill_sub_menu();
     		break;
     	case CHOICE_SET_TIME:
     		display_menu_item("will ask for time info here");
@@ -93,6 +96,8 @@ void ui_view_display(void)
 }
 static void display_menu_item(const char *str)
 {
+	last_displayed_num = 65535;
+
 	if (!strings_compare(str, last_displayed_str))
 	{
 		lcd_clear();
@@ -101,10 +106,29 @@ static void display_menu_item(const char *str)
 	}
 }
 
+static void display_number(const char *str, uint16_t i)
+{
+	if (!strings_compare(str, last_displayed_str))
+	{
+		lcd_clear();
+		lcd_write_str(str);
+		update_last_string(str);
+		last_displayed_num = 65535;
+	}
+
+	if (i != last_displayed_num)
+	{
+		lcd_goto(0, 1);
+		lcd_write_int(i);
+		last_displayed_num = i;
+	}
+}
+
 static void display_time(void)
 {
 	//We are displaying time now, so the last string should be reset
 	update_last_string("");
+	last_displayed_num = 65535;
 
 	static uint32_t seconds_last = 0;
 	uint32_t seconds_since_turn_on = clock_get_seconds();
@@ -130,6 +154,97 @@ static void update_last_string(const char *str)
 		last_displayed_str[j++] = *str++;
 }
 
+static void display_enter_bill_sub_menu(void)
+{
+	switch (current_menu->current_sub_menu_choice)
+	{
+	case SUB_CHOICE_MAX:
+		display_menu_item("Bill is for:    MAX");
+		break;
+	case SUB_CHOICE_MISH:
+		display_menu_item("Bill is for:    MISH");
+		break;
+	case CHASE_FREEDOM:
+		display_menu_item("To pay: CHASE FREEDOM");
+		break;
+	case CHASE_SAPPHIRE:
+		display_menu_item("To pay: CHASE SAPPHIRE");
+		break;
+	case CAPITAL_ONE:
+		display_menu_item("To pay: CAPITAL ONE");
+		break;
+	case DISCOVER:
+		display_menu_item("To pay: DISCOVER");
+		break;
+	case AMEX:
+		display_menu_item("To pay: AMEX");
+		break;
+	case CITI:
+		display_menu_item("To pay: CITI");
+		break;
+	case ELECTRICITY:
+		display_menu_item("To pay: ELECTRICITY");
+		break;
+	case WATER:
+		display_menu_item("To pay: WATER/SEWAGE/GARBAGE");
+		break;
+	case COMCAST:
+		display_menu_item("To pay: COMCAST");
+		break;
+	case MEDICAL:
+		display_menu_item("To pay: MEDICAL");
+		break;
+	case MISC:
+		display_menu_item("To pay: OTHER");
+		break;
+	case JANUARY:
+		display_menu_item("Due: JANUARY");
+		break;
+	case FEBRUARY:
+		display_menu_item("Due: FEBRUARY");
+		break;
+	case MARCH:
+		display_menu_item("Due: MARCH");
+		break;
+	case APRIL:
+		display_menu_item("Due: APRIL");
+		break;
+	case MAY:
+		display_menu_item("Due: MAY");
+		break;
+	case JUNE:
+		display_menu_item("Due: JUNE");
+		break;
+	case JULY:
+		display_menu_item("Due: JULY");
+		break;
+	case AUGUST:
+		display_menu_item("Due: AUGUST");
+		break;
+	case SEPTEMBER:
+		display_menu_item("Due: SEPTEMBER");
+		break;
+	case OCTOBER:
+		display_menu_item("Due: OCTOBER");
+		break;
+	case NOVEMBER:
+		display_menu_item("Due: NOVEMBER");
+		break;
+	case DECEMBER:
+		display_menu_item("Due: DECEMBER");
+		break;
+	case CONFIRM_ENTER_BILL:
+		display_menu_item("Confirm?");
+		break;
+	case WAIT_E:
+		display_menu_item("Saving to memory...");
+		break;
+	default:
+		//The default case is for when the sub choice is 1-31, in which case, it means that is the date
+		display_number("Date: ", current_menu->current_sub_menu_choice);
+		break;
+	}
+}
 
 
 

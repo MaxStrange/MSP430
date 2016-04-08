@@ -149,9 +149,9 @@ __interrupt void PORT2_ISR(void)
 	{
 		number_of_turns = 0;
 		if (clockwise)
-			current_menu->scroll_menu_forward(&(current_menu->current_choice));
+			current_menu->scroll_menu_forward(&(current_menu->current_choice), &(current_menu->current_sub_menu_choice));
 		else
-			current_menu->scroll_menu_backward(&(current_menu->current_choice));
+			current_menu->scroll_menu_backward(&(current_menu->current_choice), &(current_menu->current_sub_menu_choice));
 	}
 
 

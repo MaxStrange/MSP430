@@ -1,3 +1,10 @@
+
+
+
+//TODO !!!!! TYPEDEF the FUNCTIONS POINTERS !!!!!!!!!!!
+
+
+
 #include <msp430.h> 
 #include <stdint.h>
 #include <stdbool.h>
