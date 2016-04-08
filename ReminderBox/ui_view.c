@@ -73,6 +73,18 @@ void ui_view_display(void)
     	case CHOICE_DISPLAY_TIME:
     		display_time();
     		break;
+    	case CHOICE_DUE_MENU:
+    		display_menu_item("due items will show up here");
+    		break;
+    	case CHOICE_PAY_MENU:
+    		display_menu_item("due items will show up here");
+    		break;
+    	case CHOICE_ENTER_BILL:
+    		display_menu_item("will ask for bill info here");
+    		break;
+    	case CHOICE_SET_TIME:
+    		display_menu_item("will ask for time info here");
+    		break;
     	default:
     		display_menu_item("Update view switch");
     		break;

@@ -29,5 +29,24 @@ typedef enum
 	CHOICE_DISPLAY_TIME = 5
 } choice_time_e;
 
+typedef enum
+{
+	CHOICE_DUE_MENU = 6
+} choice_due_e;
+
+typedef enum
+{
+	CHOICE_PAY_MENU = 7
+} choice_pay_e;
+
+typedef enum
+{
+	CHOICE_ENTER_BILL = 8
+} choice_enter_bill_e;
+
+typedef enum
+{
+	CHOICE_SET_TIME = 9
+} choice_set_time_e;
 
 #endif /* MENU_H_ */
