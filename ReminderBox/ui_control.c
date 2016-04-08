@@ -7,22 +7,39 @@
 #include "ui_control.h"
 
 
+
+typedef enum
+{
+	LBLG,		//Low blue, low green... etc.
+	HBLG,
+	HBHG,
+	LBHG
+} encoder_state_e;
+
+volatile static encoder_state_e encoder_state = LBLG;
 volatile static menu_system_t *current_menu;
 volatile static bool *sleep;
+volatile static unsigned int number_of_turns = 0;
+volatile static bool clockwise = false;
 
 
 void ui_control_init(volatile bool *sleep_ptr, volatile menu_system_t *menu)
 {
+	//Configure the quad pins as GPIO
+	P2SEL &= ~(QEN_BLUE | QEN_GREEN);
+	P2SEL2 &= ~(QEN_BLUE | QEN_GREEN);
+
 	//set buttons and quad encoder to input
 	P1DIR &= ~(CONFIRM_BUTTON | REJECT_BUTTON);
 	P2DIR &= ~(QEN_BLUE | QEN_GREEN);
 
-	//set the pullup/pulldown resistors for the buttons
+	//set the pullup/pulldown resistors for the buttons and quad encoder
 	P1REN |= CONFIRM_BUTTON | REJECT_BUTTON;
-	//TODO : Figure out whether the quad encoder needs resistors
+	P2REN |= QEN_BLUE | QEN_GREEN;
 
 	//set the resistors as pulldowns
 	P1OUT &= ~(CONFIRM_BUTTON | REJECT_BUTTON);
+	P2OUT &= ~(QEN_BLUE | QEN_GREEN);
 
 	sleep = sleep_ptr;
 	current_menu = menu;
@@ -37,7 +54,8 @@ void ui_control_start(void)
     P1IES &= ~(CONFIRM_BUTTON | REJECT_BUTTON);
     P1IE |= CONFIRM_BUTTON | REJECT_BUTTON;
 
-    //TODO initialize the quad encoder interrupts too
+    P2IES &= ~(QEN_GREEN | QEN_BLUE);//fire on rising edge
+    P2IE |= QEN_GREEN | QEN_BLUE;
 
     //TODO initialize the countdown timer with interrupt that will cause sleep to become true when it fires
 }
@@ -66,7 +84,7 @@ inline static bool debounce(bool red)
 #pragma vector = PORT1_VECTOR
 __interrupt void PORT1_ISR(void)
 {
-	//Which peripheral fired the interrupt?
+	//Which button fired the interrupt?
 
 	if (P1IN & CONFIRM_BUTTON)
 	{
@@ -76,14 +94,68 @@ __interrupt void PORT1_ISR(void)
 	else if (P1IN & REJECT_BUTTON)
 	{
 		if (debounce(true))
-			current_menu->reject(current_menu, current_menu->current_choice);
+			current_menu->reject(current_menu, &current_menu->current_choice);
 	}
-	else
-	{
-		//TODO Quad encoder interrupt
-	}
-
 
 	P1IFG &= ~(CONFIRM_BUTTON | REJECT_BUTTON);//Make sure you clear the interrupt flag before you return
+}
+
+#pragma vector = PORT2_VECTOR
+__interrupt void PORT2_ISR(void)
+{
+	//Which pin on the quad encoder fired?
+	if (P2IN & QEN_GREEN)
+	{
+		switch (encoder_state)
+		{
+		case LBLG:
+			encoder_state = LBHG;
+			clockwise = true;
+			break;
+		case HBLG:
+			encoder_state = HBHG;
+			clockwise = false;
+			break;
+		case HBHG:
+			break;
+		case LBHG:
+			break;
+		}
+	}
+
+	if (P2IN & QEN_BLUE)
+	{
+		switch (encoder_state)
+		{
+		case LBLG:
+			encoder_state = HBLG;
+			clockwise = false;
+			break;
+		case HBLG:
+			break;
+		case HBHG:
+			break;
+		case LBHG:
+			encoder_state = HBHG;
+			clockwise = true;
+			break;
+		}
+	}
+
+
+	number_of_turns++;
+
+	if (number_of_turns > 5)
+	{
+		number_of_turns = 0;
+		if (clockwise)
+			current_menu->scroll_menu_forward(&(current_menu->current_choice));
+		else
+			current_menu->scroll_menu_backward(&(current_menu->current_choice));
+	}
+
+
+
+	P2IFG &= ~(QEN_GREEN | QEN_BLUE);//Make sure you clear the interrupt flag before you return
 }
 

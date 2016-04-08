@@ -45,7 +45,7 @@ void lcd_light_on(void)
 	P1OUT |= LCDPIN_LIGHT;
 }
 
-void led_light_off(void)
+void lcd_light_off(void)
 {
 	P1OUT &= ~LCDPIN_LIGHT;
 }

@@ -29,7 +29,7 @@ static void display_menu_item(const char *str);
 static void display_time(void);
 
 
-void ui_view_init(volatile bool *sleep, volatile menu_system_t *menu_ptr)
+void ui_view_init(volatile bool *sleep_ptr, volatile menu_system_t *menu_ptr)
 {
 	/*
 	 * Initialize LCD module
@@ -46,11 +46,12 @@ void ui_view_init(volatile bool *sleep, volatile menu_system_t *menu_ptr)
     led_off();
 
     current_menu = menu_ptr;
+    sleep = sleep_ptr;
 }
 
 void ui_view_display(void)
 {
-    while (!*sleep)
+    while (!(*sleep))
     {
     	switch (current_menu->current_choice)
     	{
@@ -76,15 +77,6 @@ void ui_view_display(void)
     		display_menu_item("Update view switch");
     		break;
     	}
-
-    /*
-   	 * 				-> user has the following options:
-   	 * 					->Pay bill (after which, the LED(s) should go off and the memory should be checked to make
-   	 * 						sure there isn't another one coming and if not, set up the next alarm.)
-   	 * 					->Check coming due dates
-   	 * 					->Enter new bill (after which, the date should be loaded into memory, then the alarms need to be updated
-   	 * 						to make sure they are still the next bills.)
-   	 */
     }
 }
 static void display_menu_item(const char *str)
@@ -99,6 +91,9 @@ static void display_menu_item(const char *str)
 
 static void display_time(void)
 {
+	//We are displaying time now, so the last string should be reset
+	update_last_string("");
+
 	static uint32_t seconds_last = 0;
 	uint32_t seconds_since_turn_on = clock_get_seconds();
 
