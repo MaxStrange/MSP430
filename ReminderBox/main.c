@@ -1,10 +1,3 @@
-
-
-
-//TODO !!!!! TYPEDEF the FUNCTIONS POINTERS !!!!!!!!!!!
-
-
-
 #include <msp430.h> 
 #include <stdint.h>
 #include <stdbool.h>
@@ -64,6 +57,8 @@ int main(void)
      * Initialize the flash memory module
      */
     memory_init();
+    memory_debug_erase_section();
+    debug_show_message("Erasing flash", NULL, 0, 1);
 
 
     /*

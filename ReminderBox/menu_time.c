@@ -14,7 +14,7 @@ static void (*reject_top_fp)(volatile menu_system_t *, volatile menu_choice_t *)
 
 
 
-static void scroll_choice(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_choice(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
 static void confirm_noop(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 static void reject_choice_go_back_to_top_level(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 
@@ -22,10 +22,10 @@ static void reject_choice_go_back_to_top_level(volatile menu_system_t *menu, vol
 volatile menu_system_t time_menu =
 {
 		.current_choice = (menu_choice_t)CHOICE_DISPLAY_TIME,
-		.scroll_menu_forward = &scroll_choice,
-		.scroll_menu_backward = &scroll_choice,
-		.confirm = &confirm_noop,
-		.reject = &reject_choice_go_back_to_top_level
+		.scroll_menu_forward = (scroll_menu_fp)&scroll_choice,
+		.scroll_menu_backward = (scroll_menu_fp)&scroll_choice,
+		.confirm = (confirm_fp)&confirm_noop,
+		.reject = (reject_fp)&reject_choice_go_back_to_top_level
 };
 
 
@@ -39,7 +39,7 @@ void menu_time_init(void (*scroll_forward_fp)(volatile menu_choice_t*, volatile 
 	reject_top_fp = reject_fp;
 }
 
-inline static void scroll_choice(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
+inline static void scroll_choice(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 	//Do nothing
 }

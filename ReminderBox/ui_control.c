@@ -16,11 +16,8 @@ typedef enum
 	LBHG
 } encoder_state_e;
 
-volatile static encoder_state_e encoder_state = LBLG;
 volatile static menu_system_t *current_menu;
 volatile static bool *sleep;
-volatile static unsigned int number_of_turns = 0;
-volatile static bool clockwise = false;
 
 
 void ui_control_init(volatile bool *sleep_ptr, volatile menu_system_t *menu)
@@ -54,8 +51,10 @@ void ui_control_start(void)
     P1IES &= ~(CONFIRM_BUTTON | REJECT_BUTTON);
     P1IE |= CONFIRM_BUTTON | REJECT_BUTTON;
 
-    P2IES &= ~(QEN_GREEN | QEN_BLUE);//fire on rising edge
-    P2IE |= QEN_GREEN | QEN_BLUE;
+//    P2IES &= ~(QEN_GREEN | QEN_BLUE);//fire on rising edge
+//    P2IE |= QEN_GREEN | QEN_BLUE;
+    P2IES &= ~QEN_GREEN;
+    P2IE |= QEN_GREEN;
 
     //TODO initialize the countdown timer with interrupt that will cause sleep to become true when it fires
 }
@@ -103,55 +102,44 @@ __interrupt void PORT1_ISR(void)
 #pragma vector = PORT2_VECTOR
 __interrupt void PORT2_ISR(void)
 {
-	//Which pin on the quad encoder fired?
+	//debounce the switch
+	__delay_cycles(5000);
+	if (! ((P2IN & QEN_GREEN) || (P2IN & QEN_BLUE)))
+	{
+		P2IFG &= ~(QEN_GREEN | QEN_BLUE);//Make sure you clear the interrupt flag before you return
+		return;
+	}
+
+
+	volatile static unsigned int number_of_turns = 0;
+	volatile static bool clockwise = false;
+
 	if (P2IN & QEN_GREEN)
 	{
-		switch (encoder_state)
+		if (P2IN & QEN_BLUE)
 		{
-		case LBLG:
-			encoder_state = LBHG;
-			clockwise = true;
-			break;
-		case HBLG:
-			encoder_state = HBHG;
 			clockwise = false;
-			break;
-		case HBHG:
-			break;
-		case LBHG:
-			break;
+		}
+		else
+		{
+			clockwise = true;
 		}
 	}
 
-	if (P2IN & QEN_BLUE)
-	{
-		switch (encoder_state)
-		{
-		case LBLG:
-			encoder_state = HBLG;
-			clockwise = false;
-			break;
-		case HBLG:
-			break;
-		case HBHG:
-			break;
-		case LBHG:
-			encoder_state = HBHG;
-			clockwise = true;
-			break;
-		}
-	}
+//	if (P2IN & QEN_BLUE)
+//	{
+//	}
 
 
 	number_of_turns++;
 
-	if (number_of_turns > 5)
+	if (number_of_turns > 1)
 	{
 		number_of_turns = 0;
 		if (clockwise)
-			current_menu->scroll_menu_forward(&(current_menu->current_choice), &(current_menu->current_sub_menu_choice));
+			current_menu->scroll_menu_forward(current_menu, &(current_menu->current_choice), &(current_menu->current_sub_menu_choice));
 		else
-			current_menu->scroll_menu_backward(&(current_menu->current_choice), &(current_menu->current_sub_menu_choice));
+			current_menu->scroll_menu_backward(current_menu, &(current_menu->current_choice), &(current_menu->current_sub_menu_choice));
 	}
 
 

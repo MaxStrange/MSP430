@@ -7,8 +7,8 @@
 #include "menu_pay_bill.h"
 
 
-static void scroll_pay_menu_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
-static void scroll_pay_menu_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_pay_menu_forward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_pay_menu_backward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
 static void confirm_pay_bill(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 static void reject_confirmation_pay_bill(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 
@@ -24,10 +24,10 @@ static void (*reject_top_fp)(volatile menu_system_t *, volatile menu_choice_t *)
 volatile menu_system_t pay_bill_menu =
 {
 		.current_choice = (menu_choice_t)CHOICE_PAY_MENU,
-		.scroll_menu_forward = &scroll_pay_menu_forward,
-		.scroll_menu_backward = &scroll_pay_menu_backward,
-		.confirm = &confirm_pay_bill,
-		.reject = &reject_confirmation_pay_bill
+		.scroll_menu_forward = (scroll_menu_fp)&scroll_pay_menu_forward,
+		.scroll_menu_backward = (scroll_menu_fp)&scroll_pay_menu_backward,
+		.confirm = (confirm_fp)&confirm_pay_bill,
+		.reject = (reject_fp)&reject_confirmation_pay_bill
 };
 
 
@@ -42,11 +42,11 @@ void menu_pay_bill_init(void (*scroll_forward_fp)(volatile menu_choice_t*, volat
 }
 
 
-inline static void scroll_pay_menu_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
+inline static void scroll_pay_menu_forward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 
-inline static void scroll_pay_menu_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
+inline static void scroll_pay_menu_backward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 
@@ -57,10 +57,10 @@ inline static void confirm_pay_bill(volatile menu_system_t *menu, volatile menu_
 inline static void reject_confirmation_pay_bill(volatile menu_system_t *menu, volatile menu_choice_t *current_item)
 {
 	//TODO redo - right now it just resets to main menu
-	menu->confirm = confirm_top_fp;
-	menu->reject = reject_top_fp;
-	menu->scroll_menu_backward = scroll_top_backward_fp;
-	menu->scroll_menu_forward = scroll_top_forward_fp;
+	menu->confirm = (confirm_fp)confirm_top_fp;
+	menu->reject = (reject_fp)reject_top_fp;
+	menu->scroll_menu_backward = (scroll_menu_fp)scroll_top_backward_fp;
+	menu->scroll_menu_forward = (scroll_menu_fp)scroll_top_forward_fp;
 
 	*current_item = (menu_choice_t)PAY_BILL;
 }

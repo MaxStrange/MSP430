@@ -7,8 +7,8 @@
 #include "menu_set_time.h"
 
 
-static void scroll_set_time_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
-static void scroll_set_time_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_set_time_forward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_set_time_backward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
 static void confirm_set_time(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 static void reject_set_time(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 
@@ -22,10 +22,10 @@ static void (*reject_top_fp)(volatile menu_system_t *, volatile menu_choice_t *)
 volatile menu_system_t set_time_menu =
 {
 		.current_choice = (menu_choice_t)CHOICE_SET_TIME,
-		.scroll_menu_forward = &scroll_set_time_forward,
-		.scroll_menu_backward = &scroll_set_time_backward,
-		.confirm = &confirm_set_time,
-		.reject = &reject_set_time
+		.scroll_menu_forward = (scroll_menu_fp)&scroll_set_time_forward,
+		.scroll_menu_backward = (scroll_menu_fp)&scroll_set_time_backward,
+		.confirm = (confirm_fp)&confirm_set_time,
+		.reject = (reject_fp)&reject_set_time
 };
 
 
@@ -40,11 +40,11 @@ void menu_set_time_init(void (*scroll_forward_fp)(volatile menu_choice_t*, volat
 }
 
 
-inline static void scroll_set_time_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
+inline static void scroll_set_time_forward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 
-inline static void scroll_set_time_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
+inline static void scroll_set_time_backward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 }
 

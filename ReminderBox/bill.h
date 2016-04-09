@@ -1,6 +1,7 @@
 #ifndef BILL_H_
 #define BILL_H_
 
+
 typedef enum person_e
 {
 	MAX_P,
@@ -52,5 +53,9 @@ typedef struct bill_t
 } bill_t;
 
 
+
+void bill_write_to_memory(bill_t *bill);
+void bill_read_next_from_memory(bill_t *bill);
+void bill_read_last_from_memory(bill_t *bill);
 
 #endif /* BILL_H_ */

@@ -8,8 +8,8 @@
 #include "menu_enter_bill.h"
 
 
-static void scroll_enter_bill_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
-static void scroll_enter_bill_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_enter_bill_forward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
+static void scroll_enter_bill_backward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice);
 static void confirm_enter_bill(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 static void reject_enter_bill(volatile menu_system_t *menu, volatile menu_choice_t *current_item);
 
@@ -23,10 +23,10 @@ volatile menu_system_t enter_bill_menu =
 {
 		.current_choice = (menu_choice_t)CHOICE_ENTER_BILL,
 		.current_sub_menu_choice = (menu_choice_t)SUB_CHOICE_MISH,
-		.scroll_menu_forward = &scroll_enter_bill_forward,
-		.scroll_menu_backward = &scroll_enter_bill_backward,
-		.confirm = &confirm_enter_bill,
-		.reject = &reject_enter_bill
+		.scroll_menu_forward = (scroll_menu_fp)&scroll_enter_bill_forward,
+		.scroll_menu_backward = (scroll_menu_fp)&scroll_enter_bill_backward,
+		.confirm = (confirm_fp)&confirm_enter_bill,
+		.reject = (reject_fp)&reject_enter_bill
 };
 
 
@@ -47,7 +47,7 @@ void menu_enter_bill_init(void (*scroll_forward_fp)(volatile menu_choice_t*, vol
 }
 
 
-inline static void scroll_enter_bill_forward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
+inline static void scroll_enter_bill_forward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 	switch (*current_sub_choice)
 	{
@@ -104,7 +104,7 @@ inline static void scroll_enter_bill_forward(volatile menu_choice_t *current_ite
 	}
 }
 
-inline static void scroll_enter_bill_backward(volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
+inline static void scroll_enter_bill_backward(volatile menu_system_t *menu, volatile menu_choice_t *current_item, volatile menu_choice_t *current_sub_choice)
 {
 	switch (*current_sub_choice)
 	{
@@ -269,8 +269,16 @@ inline static void confirm_enter_bill(volatile menu_system_t *menu, volatile men
 		menu->current_sub_menu_choice = (menu_choice_t)1;
 		break;
 	case CONFIRM_ENTER_BILL:
-		//TODO save the bill to the memory
+		//Set to wait and write the bill to memory
 		menu->current_sub_menu_choice = WAIT_E;
+		bill_write_to_memory(&current_bill);
+
+		//Go back to top menu
+		menu->confirm = confirm_top_fp;
+		menu->reject = reject_top_fp;
+		menu->scroll_menu_backward = scroll_top_backward_fp;
+		menu->scroll_menu_forward = scroll_top_forward_fp;
+		*current_item = (menu_choice_t)ENTER_NEW_DATE;
 		break;
 	case WAIT_E:
 		//Do nothing while waiting
@@ -331,8 +339,6 @@ inline static void reject_enter_bill(volatile menu_system_t *menu, volatile menu
 		break;
 	case WAIT_E:
 		//Do nothing while waiting
-		//TODO this line is for debugging
-		menu->current_sub_menu_choice = CONFIRM_ENTER_BILL;
 		break;
 	default:
 		//We are in date, go back to month

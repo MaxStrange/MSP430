@@ -15,10 +15,10 @@
 volatile menu_system_t top_menu =
 {
 		.current_choice = (menu_choice_t)DISPLAY_TIME,
-		.scroll_menu_forward = &scroll_top_menu_forward,
-		.scroll_menu_backward = &scroll_top_menu_backward,
-		.confirm = &confirm_top_menu,
-		.reject = &reject_top_menu
+		.scroll_menu_forward = (scroll_menu_fp)&scroll_top_menu_forward,
+		.scroll_menu_backward = (scroll_menu_fp)&scroll_top_menu_backward,
+		.confirm = (confirm_fp)&confirm_top_menu,
+		.reject = (reject_fp)&reject_top_menu
 };
 
 

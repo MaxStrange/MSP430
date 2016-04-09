@@ -1,19 +1,36 @@
 #ifndef MENU_H_
 #define MENU_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "bill.h"
+
+
+
+
 typedef int menu_choice_t;
+
+typedef void (*confirm_fp)(volatile struct menu_system_t *, volatile menu_choice_t *);
+typedef void (*reject_fp)(volatile struct menu_system_t *, volatile menu_choice_t *);
+typedef void (*scroll_menu_fp)(volatile struct menu_system_t *, volatile menu_choice_t *, volatile menu_choice_t *);
 
 
 typedef struct menu_system_t
 {
 	menu_choice_t current_choice;
 	menu_choice_t current_sub_menu_choice;
+	bill_t selected_bill;
 
-	void (*confirm)(volatile struct menu_system_t *menu, volatile menu_choice_t *menu_item);
-	void (*reject)(volatile struct menu_system_t *menu, volatile menu_choice_t *menu_item);
-	void (*scroll_menu_forward)(volatile menu_choice_t *menu_item, volatile menu_choice_t *current_sub_choice);
-	void (*scroll_menu_backward)(volatile menu_choice_t *menu_item, volatile menu_choice_t *current_sub_choice);
+	confirm_fp confirm;
+	reject_fp reject;
+	scroll_menu_fp scroll_menu_forward;
+	scroll_menu_fp scroll_menu_backward;
 } menu_system_t;
+
+
+
+
 
 #define TOP_MENU_SIZE 5
 typedef enum
